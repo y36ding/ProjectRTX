@@ -59,11 +59,17 @@ int main (int argc, char * argv[])
 	in_mem_p->ok_flag = 0; 
 	do
 	{
-
+		while(in_mem_p->ok_flag == 0) {
+			usleep(100000);
+		}
+		fflush(stdout);
+		fflush(stdout);
+		printf("Output received\n");
+		printf("%s",in_mem_p->outdata);
+		fflush(stdout);
+		in_mem_p->ok_flag = 0;
 		
-	}
-		
-	while(1);  //an infinite loop - exit when parent signals us
+	}while(1);  //an infinite loop - exit when parent signals us
 
 } // CRT
 

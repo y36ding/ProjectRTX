@@ -80,7 +80,7 @@ void processP() {
 
 		while(env==NULL) {
 			usleep(tWait);
-			env1 = receive_message();
+			//env1 = receive_message();
 		}
 
 	}
@@ -144,6 +144,28 @@ void cleanup()
 void crt_i_proc(int signum)
 {
 	printf("Inside CRT I proc\n");
+
+	current_process = pid_to_pcb(CRT_I_PROCESS_ID);
+
+	MsgEnv* env = k_receive_message();
+	outputbuf command;
+
+	if (env==NULL) {
+		env = k_receive_message();
+	}
+
+	fflush(stdout);
+	printf("Message received by crt i proc\n");
+	printf("The message data section holds \"%s\" \n",env->data);
+
+	fflush(stdout);
+
+	//in_mem_p_crt->outdata[0] = env->data;
+	strcpy(in_mem_p_crt->outdata,env->data);
+	printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
+	in_mem_p_crt->ok_flag = 1;
+
+	return;
 }
 
 void kbd_i_proc(int signum)
@@ -174,7 +196,12 @@ void kbd_i_proc(int signum)
 			//if (in_mem_p_key->indata[0] != '\0') {
 				//strcpy(env->data,in_mem_p_key->indata);
 
-				env->data = "some data/0";
+				//env->data = "some data\0";
+				//for(int i = 0 ; i < in_mem_p_key->length ; i++) {
+					//env->data[0] = in_mem_p_key->indata[0];
+				//}
+				memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length);
+
 				fflush(stdout);
 				printf("Got message\n");
 				fflush(stdout);
@@ -300,6 +327,7 @@ int main()
 	for (i = 0; i < MSG_ENV_COUNT; i++)
 	{
 		MsgEnv* env = (MsgEnv*)malloc(sizeof(MsgEnv));
+		env->data = (char*)malloc(40);
 		if (env)
 			MsgEnvQ_enqueue(free_env_queue, env);
 		// deal with non null later
