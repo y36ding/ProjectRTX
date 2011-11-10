@@ -52,7 +52,7 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 MsgEnv* k_receive_message()
 {
 	MsgEnv* ret = NULL;
-	printf("Current PCB msgQ size is %i\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
+	printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
 	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
 		ret = MsgEnvQ_dequeue(current_process->rcv_msg_queue);
 		printf("%i",ret->dest_pid);
@@ -68,7 +68,7 @@ int k_send_console_chars(MsgEnv *message_envelope)
 {
 	if (!message_envelope)
 		return NULL_ARGUMENT;
-	message_envelope->msg_type == DISPLAY_ACK;
+	message_envelope->msg_type = DISPLAY_ACK;
 	int retVal = k_send_message(CRT_I_PROCESS_ID, message_envelope);
 	crt_i_proc(0);
 	return retVal;
@@ -84,7 +84,6 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	current_process = pid_to_pcb(KB_I_PROCESS_ID);
 	printf("got here\n");
 	kbd_i_proc(0);
-	//kill(getpid(),SIGUSR1);
 	printf("keyboard process returned to get-console-chars\n");
 
 	return retVal;

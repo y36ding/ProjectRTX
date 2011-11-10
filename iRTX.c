@@ -58,13 +58,18 @@ void processP() {
         printf("Asking for Characters\n");
         fflush(stdout);
 		get_console_chars (env);
-		env = receive_message();
+		current_process = pid_to_pcb(P_PROCESS_ID);
+		env = k_receive_message();
 
 		while(env==NULL) {
 			usleep(tWait);
 			printf("");
-			env=receive_message();
+			env = k_receive_message();
 		}
+
+		fflush(stdout);
+		printf("processP got message from keyboard");
+		fflush(stdout);
 
 		send_console_chars(env);
 
@@ -171,7 +176,7 @@ void kbd_i_proc(int signum)
 
 				k_send_message(env->sender_pid,env);
 				fflush(stdout);
-				printf("Keyboard sent message");
+				printf("Keyboard sent message\n");
 				fflush(stdout);
 			//}
 
