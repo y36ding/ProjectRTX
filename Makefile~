@@ -50,10 +50,6 @@ keyboard:keyboard.o
 
 #compile the source code into object files
 
-debug.o: debug.c 
-	@echo building debug.c
-	$(CC) $(CFLAGS) debug.c
-
 crt.o: crt.c 
 	@echo building crt.c
 	$(CC) $(CFLAGS) crt.c
