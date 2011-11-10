@@ -7,6 +7,14 @@
 #include <sys/shm.h>
 #include <errno.h>
 
+#include <stdlib.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <string.h>
+
 #include <unistd.h>
 
 

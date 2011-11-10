@@ -9,7 +9,7 @@ pcb* pid_to_pcb(int pid)
 
 		case 0 : return pcb_list[0];
 		case 1 : return pcb_list[1];
-		case 3 : return pcb_list[3];
+		case 2 : return pcb_list[2];
 		default: return NULL;
 
 	}
@@ -37,29 +37,44 @@ int k_release_message_env(MsgEnv* env)
 
 int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 {
-	pcb* dest_pcb =  pid_to_pcb(dest_process_id);
-	if (!dest_pcb || !msg_envelope)
+	fflush(stdout);
+	printf("Gonna send message now\n");
+	fflush(stdout);
+
+	fflush(stdout);
+	printf("Dest process id is %i\n",dest_process_id);
+	fflush(stdout);
+	//pcb* dest_pcb =  pid_to_pcb(dest_process_id);
+	pcb* dest_pcb = pcb_list[dest_process_id];
+
+	if (!dest_pcb || !msg_envelope) {
 		return NULL_ARGUMENT;
+		printf("The destPCB or MSG_ENV is empty\n");
+	}
+
 
 	msg_envelope->sender_pid = current_process->pid;
 	msg_envelope->dest_pid = dest_process_id;
 
+	fflush(stdout);
+	printf("Dest pid is %i\n",dest_pcb->pid);
+	fflush(stdout);
+
 	MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
-	printf("message SENT on enqueued on PID %i\n",dest_pcb->pid);
+	printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(pid_to_pcb(P_PROCESS_ID)->rcv_msg_queue));
 	return SUCCESS;
 }
 
 MsgEnv* k_receive_message()
 {
+
 	MsgEnv* ret = NULL;
+	fflush(stdout);
 	printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
 	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
 		ret = MsgEnvQ_dequeue(current_process->rcv_msg_queue);
 		printf("%i",ret->dest_pid);
 	}
-
-
-	printf("Sender PID %i\n",ret->sender_pid);
 
 	return ret;
 }
@@ -68,6 +83,8 @@ int k_send_console_chars(MsgEnv *message_envelope)
 {
 	if (!message_envelope)
 		return NULL_ARGUMENT;
+
+
 	message_envelope->msg_type = DISPLAY_ACK;
 	int retVal = k_send_message(CRT_I_PROCESS_ID, message_envelope);
 	crt_i_proc(0);

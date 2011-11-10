@@ -49,6 +49,7 @@ void processP() {
 	MsgEnv* env1;
 	env = request_msg_env();
 	env1 = request_msg_env();
+	env->sender_pid = 2;
     printf("Envelopes Allocated\n");
     fflush(stdout);
     //printMsgEnv(env1);
@@ -59,7 +60,10 @@ void processP() {
         fflush(stdout);
 		get_console_chars (env);
 		current_process = pid_to_pcb(P_PROCESS_ID);
-		env = k_receive_message();
+		fflush(stdout);
+		printf("process changed to ProcessP\n");
+		fflush(stdout);
+		env = receive_message();
 
 		while(env==NULL) {
 			usleep(tWait);
@@ -68,10 +72,11 @@ void processP() {
 		}
 
 		fflush(stdout);
-		printf("processP got message from keyboard");
+		printf("processP got message from keyboard\n");
 		fflush(stdout);
 
 		send_console_chars(env);
+		env = receive_message();
 
 		while(env==NULL) {
 			usleep(tWait);
@@ -174,7 +179,8 @@ void kbd_i_proc(int signum)
 				printf("Got message\n");
 				fflush(stdout);
 
-				k_send_message(env->sender_pid,env);
+				//k_send_message(env->sender_pid,env);
+				k_send_message(2,env);
 				fflush(stdout);
 				printf("Keyboard sent message\n");
 				fflush(stdout);
@@ -187,66 +193,7 @@ void kbd_i_proc(int signum)
 
 	return;
 
-
-
-	/*inputbuf command;
-
-	// copy input buffer
-	if (in_mem_p_key->indata[0] != '\0')
-	{
-	    strcpy(command.indata,in_mem_p_key->indata);
-
-	    // we should parse the input string and execute the command given,
-	    //  but for now we just echo the input
-	    //
-
-	    if (!strcmp(command.indata,"t")) {
-            die(SIGINT);
-	    }
-
-	    if (!strcmp(command.indata,"cd")) {
-		//printf("Command Recognized!\n");
-		int seconds = 0;
-		int mins = 0;
-		int hours = 0;
-
-		int numLeft = numOfTicks;
-
-		hours = numLeft/3600;
-		numLeft = numLeft%3600;
-
-		mins = numLeft/60;
-		numLeft = numLeft%60;
-
-		seconds = numLeft;
-
-		printf("Time Elapsed: %.2d:%.2d:%.2d\n",hours,mins,seconds);
-		displayClock = 1;
-	    }
-
-	    if (!strcmp(command.indata,"ct")) {
-		displayClock = 0;
-	    }
-
-	    if (command.indata[0] == 'c' && command.indata[1] == ' ') {
-		//for now to set the time, you can only put in one space after
-		//typing in c and then specify the hh:mm:ss
-		numOfTicks = 0;
-
-		int hour = atoi(&(command.indata[2]));
-		int min = atoi(&(command.indata[5]));
-		int sec = atoi(&(command.indata[8]));
-
-		printf("%.2d:%.2d:%.2d",hour,min,sec);
-
-		numOfTicks = hour*3600 + min*60 + sec;
-
-	    }
-
-	    //printf("Keyboard input was: %s\n",command.indata);
-	    in_mem_p_key->ok_flag = 0;  // tell child that the buffer has been emptied
-
-
+/*
 
 	inputbuf command;
 
@@ -318,14 +265,30 @@ int main()
 	pcb_list[0]->state = KB_I_PROCESS_ID;
 	pcb_list[0]->name = KB_I_PROCESS_ID;
 	pcb_list[0]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+	pcb_list[0]->rcv_msg_queue->head = NULL;
+	pcb_list[0]->rcv_msg_queue->tail = NULL;
 	pcb_list[0]->is_i_process = TRUE;
+
+	pcb_list[1]->pid = CRT_I_PROCESS_ID;
+	pcb_list[1]->priority = CRT_I_PROCESS_ID;
+	pcb_list[1]->state = CRT_I_PROCESS_ID;
+	pcb_list[1]->name = CRT_I_PROCESS_ID;
+	pcb_list[1]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+	pcb_list[1]->rcv_msg_queue->head = NULL;
+	pcb_list[1]->rcv_msg_queue->tail = NULL;
+	pcb_list[1]->is_i_process = TRUE;
 
 	pcb_list[2]->pid = P_PROCESS_ID;
 	pcb_list[2]->priority = P_PROCESS_ID;
 	pcb_list[2]->state = P_PROCESS_ID;
 	pcb_list[2]->name = P_PROCESS_ID;
 	pcb_list[2]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+	pcb_list[2]->rcv_msg_queue->head = NULL;
+	pcb_list[2]->rcv_msg_queue->tail = NULL;
 	pcb_list[2]->is_i_process = FALSE;
+
+	fflush(stdout);
+	printf("Length of the two MsgEnv queues are %i and %i",MsgEnvQ_size(pcb_list[0]->rcv_msg_queue),MsgEnvQ_size(pcb_list[2]->rcv_msg_queue) );
 
 	current_process = pcb_list[2];
 
