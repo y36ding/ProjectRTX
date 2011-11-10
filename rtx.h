@@ -7,6 +7,9 @@
 #include <sys/shm.h>
 #include <errno.h>
 
+#include <unistd.h>
+
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -17,7 +20,7 @@
 // Process IDs
 #define KB_I_PROCESS_ID        0
 #define CRT_I_PROCESS_ID       1
-#define P_PROCESS_ID 2
+#define P_PROCESS_ID 		   2
 
 // RTX Constants
 #define MSG_ENV_SIZE 1024
@@ -38,8 +41,8 @@ typedef int bool;
 
 #define DEMO 1
 
-void kbd_i_proc(int signum);
-void crt_i_proc(int signum);
+//void kbd_i_proc(int signum);
+//void crt_i_proc(int signum);
 
 
 typedef enum msg_type {
@@ -71,7 +74,7 @@ typedef struct process_control_block {
 	int priority;
 	ProcessState state;
 	char* name;
-	MsgEnvQ  rcv_msg_queue;
+	MsgEnvQ*  rcv_msg_queue;
 	//jmp_buf* context;
 	char* stack;
 	void* address;

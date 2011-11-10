@@ -13,6 +13,6 @@ int k_get_console_chars(MsgEnv *message_envelope);
 int k_send_console_chars(MsgEnv *message_envelope);
 
 int k_release_message_env(MsgEnv* env);
-MsgEnv* request_msg_env();
+MsgEnv* k_request_msg_env();
 
 #endif

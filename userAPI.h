@@ -11,4 +11,7 @@ MsgEnv *receive_message();
 int send_console_chars(MsgEnv *msg_env);
 int get_console_chars(MsgEnv *msg_env);
 
+int release_message_env(MsgEnv* env);
+MsgEnv* request_msg_env();
+
 #endif

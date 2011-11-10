@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <signal.h>
-#include <unistd.h>			// getpid() definition
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
@@ -48,8 +47,8 @@ void processP() {
 	//env = request_msg_env();
 	MsgEnv* env;
 	MsgEnv* env1;
-	env = (MsgEnv*)malloc(MSG_ENV_SIZE);
-	env1 = (MsgEnv*)malloc(MSG_ENV_SIZE);
+	env = request_msg_env();
+	env1 = request_msg_env();
     printf("Envelopes Allocated\n");
     fflush(stdout);
     //printMsgEnv(env1);
@@ -134,11 +133,57 @@ void cleanup()
 
 void crt_i_proc(int signum)
 {
- return;
+	printf("Inside CRT I proc\n");
 }
 
 void kbd_i_proc(int signum)
 {
+
+	printf("Inside keyboard I proc\n");
+	MsgEnv* env = k_receive_message();
+	inputbuf command;
+
+	printf("1\n");
+
+	//assert(env==NULL);
+
+	if (env != NULL) {
+
+		fflush(stdout);
+		printf("Envelope recognized by kbd_i_proc\n");
+		fflush(stdout);
+
+
+		while (in_mem_p_key->ok_flag==0);
+
+
+				fflush(stdout);
+				printf("Got message\n");
+				fflush(stdout);
+
+			//if (in_mem_p_key->indata[0] != '\0') {
+				//strcpy(env->data,in_mem_p_key->indata);
+
+				env->data = "some data/0";
+				fflush(stdout);
+				printf("Got message\n");
+				fflush(stdout);
+
+				k_send_message(env->sender_pid,env);
+				fflush(stdout);
+				printf("Keyboard sent message");
+				fflush(stdout);
+			//}
+
+			in_mem_p_key->ok_flag = 0;
+			return;
+
+	}
+
+	return;
+
+
+
 	/*inputbuf command;
 
 	// copy input buffer
@@ -196,7 +241,7 @@ void kbd_i_proc(int signum)
 	    //printf("Keyboard input was: %s\n",command.indata);
 	    in_mem_p_key->ok_flag = 0;  // tell child that the buffer has been emptied
 
-	    */
+
 
 	inputbuf command;
 
@@ -212,6 +257,7 @@ void kbd_i_proc(int signum)
 	    in_mem_p_key->ok_flag = 0;  // tell child that the buffer has been emptied
 
 	}
+	*/
 
 }
 
@@ -255,23 +301,37 @@ void tick_handler(int signum) {
 //**************************************************************************
 int main()
 {
+
+	free_env_queue = (MsgEnvQ*)MsgEnvQ_create();
+
+
+	pcb_list[0] = (pcb*)malloc(sizeof(pcb));
+	pcb_list[1] = (pcb*)malloc(sizeof(pcb));
+	pcb_list[2] = (pcb*)malloc(sizeof(pcb));
 	pcb_list[0]->pid = KB_I_PROCESS_ID;
 	pcb_list[0]->priority = KB_I_PROCESS_ID;
 	pcb_list[0]->state = KB_I_PROCESS_ID;
 	pcb_list[0]->name = KB_I_PROCESS_ID;
-	pcb_list[0]->rcv_msg_queue = malloc(sizeof(MsgEnvQ));
-	pcb_list[0]->rcv_msg_queue->head = NULL;
-	pcb_list[0]->rcv_msg_queue->tail = NULL;
+	pcb_list[0]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
 	pcb_list[0]->is_i_process = TRUE;
 
+	pcb_list[2]->pid = P_PROCESS_ID;
+	pcb_list[2]->priority = P_PROCESS_ID;
+	pcb_list[2]->state = P_PROCESS_ID;
+	pcb_list[2]->name = P_PROCESS_ID;
+	pcb_list[2]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+	pcb_list[2]->is_i_process = FALSE;
+
+	current_process = pcb_list[2];
+
 	// Initialize envelopes
-	free_env_queue = malloc(sizeof(MsgEnvQ));
+	free_env_queue = (MsgEnvQ*)malloc(sizeof(MsgEnvQ));
 	free_env_queue->head = NULL;
 	free_env_queue->tail = NULL;
 	int i;
 	for (i = 0; i < MSG_ENV_COUNT; i++)
 	{
-		MsgEnv* env = malloc(sizeof(MsgEnv));
+		MsgEnv* env = (MsgEnv*)malloc(sizeof(MsgEnv));
 		if (env)
 			MsgEnvQ_enqueue(free_env_queue, env);
 		// deal with non null later
@@ -296,7 +356,7 @@ int main()
 
 	// signal from keyboard reader is SIGUSR1 (user-defined signal)
 	// When there is input from the keyboard, call the kbd_i_proc() routine
-	sigset(SIGUSR1,kbd_i_proc);
+	//sigset(SIGUSR1,kbd_i_proc);
 
 	/* Create a new mmap file for read/write access with permissions restricted
 	to owner rwx access only */

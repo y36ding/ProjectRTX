@@ -24,9 +24,24 @@ int send_console_chars(MsgEnv *message_envelope)
 }
 int get_console_chars(MsgEnv *message_envelope){
 	atomic(TRUE);
+	printf("Atomic true works\n");
 	int ret = k_get_console_chars(message_envelope);
+	printf("Got console chars\n");
 	atomic(FALSE);
 	return ret;
 }
 
+int release_message_env(MsgEnv* env){
+	atomic(TRUE);
+	int ret = k_release_message_env(env);
+	atomic(FALSE);
+	return ret;
+
+}
+MsgEnv* request_msg_env(){
+	atomic(TRUE);
+	int ret = k_request_msg_env();
+	atomic(FALSE);
+	return ret;
+}
 

@@ -81,4 +81,6 @@ processP.o: processP.c
 clean:
 	@echo Cleaning object files
 	rm *.o
+	rm keyboardBuffer
+	rm crtBuffer
 	#rm ${OBJS}

@@ -15,13 +15,13 @@ pcb* pid_to_pcb(int pid)
 	}
 }
 
-
 MsgEnv* k_request_msg_env()
 {
 	// the real code will keep on trying to search free env
 	// queue for envelope and get blocked otherwise
 	if (MsgEnvQ_size(free_env_queue) == 0)
 		return NULL;
+
 	MsgEnv* free_env = MsgEnvQ_dequeue(free_env_queue);
 	return free_env;
 }
@@ -30,7 +30,7 @@ int k_release_message_env(MsgEnv* env)
 {
 	if (env == NULL)
 		return NULL_ARGUMENT;
-	MsgEngQ_enqueue(free_env_queue,env);
+	MsgEnvQ_enqueue(free_env_queue,env);
 	// check processes blocked for allocate envelope
 	return SUCCESS;
 }
@@ -45,19 +45,21 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 	msg_envelope->dest_pid = dest_process_id;
 
 	MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
+	printf("message SENT on enqueued on PID %i\n",dest_pcb->pid);
 	return SUCCESS;
 }
 
 MsgEnv* k_receive_message()
 {
-	// if i-process
-	if (current_process->is_i_process == TRUE)
-		return NULL;
-
 	MsgEnv* ret = NULL;
-
-	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0)
+	printf("Current PCB msgQ size is %i\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
+	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
 		ret = MsgEnvQ_dequeue(current_process->rcv_msg_queue);
+		printf("%i",ret->dest_pid);
+	}
+
+
+	printf("Sender PID %i\n",ret->sender_pid);
 
 	return ret;
 }
@@ -79,7 +81,12 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	message_envelope->msg_type = CONSOLE_INPUT;
 	int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
 
+	current_process = pid_to_pcb(KB_I_PROCESS_ID);
+	printf("got here\n");
 	kbd_i_proc(0);
+	//kill(getpid(),SIGUSR1);
+	printf("keyboard process returned to get-console-chars\n");
+
 	return retVal;
 }
 
@@ -97,8 +104,8 @@ void atomic(bool state)
 		sigemptyset(&newmask);
 		sigaddset(&newmask, SIGALRM); //the alarm signal
 		sigaddset(&newmask, SIGINT); // the CNTRL-C
-		sigaddset(&newmask, SIGUSR1); // the CRT signal
-		sigaddset(&newmask, SIGUSR2); // the KB signal
+		sigaddset(&newmask, SIGUSR1); // the KB signal
+		sigaddset(&newmask, SIGUSR2); // the CRT signal
 		sigprocmask(SIG_BLOCK, &newmask, &oldmask);
 	}
 	else
