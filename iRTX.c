@@ -39,20 +39,25 @@ char * cfilename = "crtBuffer";  //the name of the crt_memory file
 
 //this function should be called in terminate
 
-/*void processP() {
+void processP() {
 
-    printf("ProcessP Started");
+    printf("ProcessP Started\n");
+    fflush(stdout);
+
     const tWait = 500000;
 	//env = request_msg_env();
 	MsgEnv* env;
 	MsgEnv* env1;
 	env = (MsgEnv*)malloc(MSG_ENV_SIZE);
 	env1 = (MsgEnv*)malloc(MSG_ENV_SIZE);
-
-    printMsgEnv(env1);
+    printf("Envelopes Allocated\n");
+    fflush(stdout);
+    //printMsgEnv(env1);
 
 	while(1) {
 
+        printf("Asking for Characters\n");
+        fflush(stdout);
 		get_console_chars (env);
 		env = receive_message();
 
@@ -71,7 +76,8 @@ char * cfilename = "crtBuffer";  //the name of the crt_memory file
 
 	}
 
-}*/
+
+}
 
 void cleanup()
 {
@@ -188,7 +194,9 @@ void kbd_i_proc(int signum)
 	    }
 
 	    //printf("Keyboard input was: %s\n",command.indata);
-	    in_mem_p_key->ok_flag = 0;  // tell child that the buffer has been emptied*/
+	    in_mem_p_key->ok_flag = 0;  // tell child that the buffer has been emptied
+
+	    */
 
 	inputbuf command;
 
@@ -220,7 +228,7 @@ void die(int signal)
 
 
 
-/*void tick_handler(int signum) {
+void tick_handler(int signum) {
 
 	numOfTicks++;
 	if (displayClock == 1) {
@@ -242,7 +250,7 @@ void die(int signal)
 	}
 	alarm(1);
 
-}*/
+}
 
 //**************************************************************************
 int main()
@@ -270,7 +278,7 @@ int main()
 	sigset(SIGTERM,die);
 	sigset(SIGSEGV,die);	// catch segmentation faults
 
-	//sigset(SIGALRM,tick_handler);
+	sigset(SIGALRM,tick_handler);
 
     alarm(1);
 
@@ -399,6 +407,7 @@ int main()
 
 	in_mem_p_crt->ok_flag = 0;
 
+    processP();
 
 	while (1);
 

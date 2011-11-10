@@ -50,7 +50,10 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	if (!message_envelope)
 		return NULL_ARGUMENT;
 	message_envelope->msg_type = CONSOLE_INPUT;
-	int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
+	//int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
+
+
+
 	kbd_i_proc(0);
 	return retVal;
 }
