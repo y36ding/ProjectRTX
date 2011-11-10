@@ -8,6 +8,26 @@ pcb* pid_to_pcb(int pid)
 	return NULL;
 }
 
+
+MsgEnv* k_request_msg_env()
+{
+	// the real code will keep on trying to search free env
+	// queue for envelope and get blocked otherwise
+	if (MsgEnvQ_size(free_env_queue) == 0)
+		return NULL;
+	MsgEnv* free_env = MsgEnvQ_dequeue(free_env_queue);
+	return free_env;
+}
+
+int k_release_message_env(MsgEnv* env)
+{
+	if (env == NULL)
+		return NULL_ARGUMENT;
+	MsgEngQ_enqueue(free_env_queue,env);
+	// check processes blocked for allocate envelope
+	return SUCCESS;
+}
+
 int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 {
 	pcb* dest_pcb =  pid_to_pcb(dest_process_id);

@@ -255,7 +255,19 @@ void tick_handler(int signum) {
 //**************************************************************************
 int main()
 {
+	pcb_list[0]->pid = KB_I_PROCESS_ID;
+	pcb_list[0]->priority = KB_I_PROCESS_ID;
+	pcb_list[0]->state = KB_I_PROCESS_ID;
+	pcb_list[0]->name = KB_I_PROCESS_ID;
+	pcb_list[0]->rcv_msg_queue = malloc(sizeof(MsgEnvQ));
+	pcb_list[0]->rcv_msg_queue->head = NULL;
+	pcb_list[0]->rcv_msg_queue->tail = NULL;
+	pcb_list[0]->is_i_process = TRUE;
+
 	// Initialize envelopes
+	free_env_queue = malloc(sizeof(MsgEnvQ));
+	free_env_queue->head = NULL;
+	free_env_queue->tail = NULL;
 	int i;
 	for (i = 0; i < MSG_ENV_COUNT; i++)
 	{
