@@ -47,7 +47,7 @@ typedef int bool;
 #define TRUE 1
 #define FALSE 0
 
-#define DEMO 1
+#define DEBUG 0
 
 //void kbd_i_proc(int signum);
 //void crt_i_proc(int signum);

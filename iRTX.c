@@ -24,7 +24,7 @@ int fid, fid2, status;		//used to create the shared memory
 int numOfTicks = 0;
 int displayClock = 0;
 
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 char * sfilename = "keyboardBuffer";  //the name of the keyboard_memory file
 char * cfilename = "crtBuffer";  //the name of the crt_memory file
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -80,12 +80,14 @@ void processP() {
 
 		while(env==NULL) {
 			usleep(tWait);
-			//env1 = receive_message();
+			env1 = receive_message();
 		}
 
+		fflush(stdout);
+		printf("processP got message from CRT\n");
+		fflush(stdout);
+
 	}
-
-
 }
 
 void cleanup()
@@ -173,11 +175,6 @@ void kbd_i_proc(int signum)
 
 	printf("Inside keyboard I proc\n");
 	MsgEnv* env = k_receive_message();
-	inputbuf command;
-
-	printf("1\n");
-
-	//assert(env==NULL);
 
 	if (env != NULL) {
 
@@ -188,30 +185,20 @@ void kbd_i_proc(int signum)
 
 		while (in_mem_p_key->ok_flag==0);
 
-
-				fflush(stdout);
-				printf("Got message\n");
-				fflush(stdout);
-
-			//if (in_mem_p_key->indata[0] != '\0') {
+				//if (in_mem_p_key->indata[0] != '\0') return;
 				//strcpy(env->data,in_mem_p_key->indata);
 
 				//env->data = "some data\0";
-				//for(int i = 0 ; i < in_mem_p_key->length ; i++) {
-					//env->data[0] = in_mem_p_key->indata[0];
-				//}
 				memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length);
-
-				fflush(stdout);
-				printf("Got message\n");
-				fflush(stdout);
 
 				//k_send_message(env->sender_pid,env);
 				k_send_message(2,env);
-				fflush(stdout);
-				printf("Keyboard sent message\n");
-				fflush(stdout);
-			//}
+				if (DEBUG==1) {
+					fflush(stdout);
+					printf("Keyboard sent message\n");
+					fflush(stdout);
+				}
+
 
 			in_mem_p_key->ok_flag = 0;
 			return;
@@ -246,9 +233,6 @@ void die(int signal)
 	printf( "Ending main process ...\n" );
 	exit(0);
 }
-// kbd_i_proc
-// Called by signal SIGUSR1 from keyboard reader process
-
 
 
 
@@ -315,7 +299,9 @@ int main()
 	pcb_list[2]->is_i_process = FALSE;
 
 	fflush(stdout);
-	printf("Length of the two MsgEnv queues are %i and %i",MsgEnvQ_size(pcb_list[0]->rcv_msg_queue),MsgEnvQ_size(pcb_list[2]->rcv_msg_queue) );
+	if (DEBUG==1) {
+		printf("Length of the two MsgEnv queues are %i and %i",MsgEnvQ_size(pcb_list[0]->rcv_msg_queue),MsgEnvQ_size(pcb_list[2]->rcv_msg_queue) );
+	}
 
 	current_process = pcb_list[2];
 
@@ -367,7 +353,6 @@ int main()
 		printf("Bad Open of mmap file <%s>\n", cfilename);
 		exit(0);
 	};
-
 
 	// make the file the same size as the buffer
 	status = ftruncate(fid, bufsize );

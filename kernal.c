@@ -37,13 +37,15 @@ int k_release_message_env(MsgEnv* env)
 
 int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 {
-	fflush(stdout);
-	printf("Gonna send message now\n");
-	fflush(stdout);
+	if (DEBUG==1) {
+		fflush(stdout);
+		printf("In send message\n");
+		fflush(stdout);
 
-	fflush(stdout);
-	printf("Dest process id is %i\n",dest_process_id);
-	fflush(stdout);
+		fflush(stdout);
+		printf("Dest process id is %i\n",dest_process_id);
+		fflush(stdout);
+	}
 	//pcb* dest_pcb =  pid_to_pcb(dest_process_id);
 	pcb* dest_pcb = pcb_list[dest_process_id];
 
@@ -56,12 +58,16 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 	msg_envelope->sender_pid = current_process->pid;
 	msg_envelope->dest_pid = dest_process_id;
 
-	fflush(stdout);
-	printf("Dest pid is %i\n",dest_pcb->pid);
-	fflush(stdout);
+	if (DEBUG==1) {
 
-	MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
-	printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(pid_to_pcb(P_PROCESS_ID)->rcv_msg_queue));
+		fflush(stdout);
+		printf("Dest pid is %i\n",dest_pcb->pid);
+		fflush(stdout);
+
+		MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
+		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(pid_to_pcb(P_PROCESS_ID)->rcv_msg_queue));
+
+	}
 	return SUCCESS;
 }
 
@@ -69,11 +75,12 @@ MsgEnv* k_receive_message()
 {
 
 	MsgEnv* ret = NULL;
-	fflush(stdout);
-	printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
+	if (DEBUG==1) {
+		fflush(stdout);
+		printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
+	}
 	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
 		ret = MsgEnvQ_dequeue(current_process->rcv_msg_queue);
-		printf("%i",ret->dest_pid);
 	}
 
 	return ret;
@@ -99,9 +106,10 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
 
 	current_process = pid_to_pcb(KB_I_PROCESS_ID);
-	printf("got here\n");
 	kbd_i_proc(0);
-	printf("keyboard process returned to get-console-chars\n");
+	if (DEBUG==1) {
+		printf("keyboard process returned to get-console-chars\n");
+	}
 
 	return retVal;
 }

@@ -11,13 +11,17 @@ int send_message(int dest_process_id, MsgEnv *msg_envelope)
 MsgEnv *receive_message()
 {
 	atomic(TRUE);
-	fflush(stdout);
-	printf("Calling receive message\n");
-	fflush(stdout);
+	if (DEBUG==1) {
+		fflush(stdout);
+		printf("Calling receive message\n");
+		fflush(stdout);
+	}
 	MsgEnv* ret = k_receive_message();
-	fflush(stdout);
-	printf("Receive message returned\n");
-	fflush(stdout);
+	if (DEBUG==1) {
+		fflush(stdout);
+		printf("Receive message returned\n");
+		fflush(stdout);
+	}
 	atomic(FALSE);
 	return ret;
 }
@@ -30,11 +34,11 @@ int send_console_chars(MsgEnv *message_envelope)
 }
 int get_console_chars(MsgEnv *message_envelope){
 	atomic(TRUE);
-	printf("Atomic true works\n");
 	int ret = k_get_console_chars(message_envelope);
-	printf("Got console chars\n");
-	printf("Current PCB msgQ size is %i for process 0\n", MsgEnvQ_size(pid_to_pcb(KB_I_PROCESS_ID)->rcv_msg_queue) );
-	//printf("Current PCB msgQ size is %i for process 2\n", MsgEnvQ_size(pid_to_pcb(P_PROCESS_ID)->rcv_msg_queue) );
+	if (DEBUG==1) {
+		printf("Current PCB msgQ size is %i for process 0\n", MsgEnvQ_size(pid_to_pcb(KB_I_PROCESS_ID)->rcv_msg_queue) );
+		//printf("Current PCB msgQ size is %i for process 2\n", MsgEnvQ_size(pid_to_pcb(P_PROCESS_ID)->rcv_msg_queue) );
+	}
 	atomic(FALSE);
 	return ret;
 }
