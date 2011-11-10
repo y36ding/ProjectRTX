@@ -5,7 +5,14 @@
 
 pcb* pid_to_pcb(int pid)
 {
-	return NULL;
+	switch (pid) {
+
+		case 0 : return pcb_list[0];
+		case 1 : return pcb_list[1];
+		case 3 : return pcb_list[3];
+		default: return NULL;
+
+	}
 }
 
 int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
@@ -50,9 +57,7 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	if (!message_envelope)
 		return NULL_ARGUMENT;
 	message_envelope->msg_type = CONSOLE_INPUT;
-	//int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
-
-
+	int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
 
 	kbd_i_proc(0);
 	return retVal;
@@ -87,3 +92,4 @@ void atomic(bool state)
 		}
 	}
 }
+
