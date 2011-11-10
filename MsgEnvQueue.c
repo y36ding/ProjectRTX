@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 // Bilal touched this
-=======
 //chinmay touch this
->>>>>>> b2c006e527fdda0f4c5490f70f50098e4d185d22
 
 #include <stdio.h>
 #include <signal.h>
