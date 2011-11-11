@@ -3,6 +3,7 @@
 
 void pm(MsgEnv* env)
 {
+#if DEBUG
 	fflush(stdout);
 
 	printf("\n======== Message Envelope Contents ==========\n");
@@ -16,31 +17,39 @@ void pm(MsgEnv* env)
 	printf("=============================\n");
 
 	fflush(stdout);
+#endif
 }
 
 void pd(double val)
 {
+#if DEBUG
 	fflush(stdout);
 	printf("%f\n", val);
 	fflush(stdout);
+#endif
 }
 
 void pi(int val)
 {
+#if DEBUG
 	fflush(stdout);
 	printf("%i\n", val);
 	fflush(stdout);
+#endif
 }
 
 void ps(char* val)
 {
+#if DEBUG
 	fflush(stdout);
 	printf("%s\n", val);
 	fflush(stdout);
+#endif
 }
 
 void pp(pcb* pcb)
 {
+#if DEBUG
 	fflush(stdout);
 
 	printf("\n======== PCB Contents ==========\n");
@@ -60,4 +69,5 @@ void pp(pcb* pcb)
 	printf("=============================\n");
 
 	fflush(stdout);
+#endif
 }

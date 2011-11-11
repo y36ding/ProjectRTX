@@ -142,14 +142,14 @@ void crt_i_proc(int signum)
 	if (error != SUCCESS)
 		ps("CRT I PROC ERROR!");
 
-	printf("Inside CRT I proc\n");
+	ps("Inside CRT I proc");
 
 
 	if (signum == SIGUSR2) {
 		if (DEBUG==1) {
 			fflush(stdout);
 			printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
-			printf("Got SIGUSR2\n");
+			ps("Got SIGUSR2");
 		}
 			displayQueue->msg_type = DISPLAY_ACK;
 			k_send_message(P_PROCESS_ID,displayQueue);
@@ -167,17 +167,21 @@ void crt_i_proc(int signum)
 		env = (MsgEnv*)k_receive_message();
 	}
 
-	fflush(stdout);
-	printf("Message received by crt i proc\n");
-	fflush(stdout);
-	printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
-	printf("The message data section holds \"%s\" \n",env->data);
-
-	fflush(stdout);
+	if (DEBUG==1) {
+		fflush(stdout);
+		printf("Message received by crt i proc\n");
+		fflush(stdout);
+		printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
+		printf("The message data section holds \"%s\" \n",env->data);
+		fflush(stdout);
+	}
 
 	//in_mem_p_crt->outdata[0] = env->data;
 	strcpy(in_mem_p_crt->outdata,env->data);
-	printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
+
+	if (DEBUG==1) {
+		printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
+	}
 	displayQueue = env;
 	in_mem_p_crt->ok_flag = 1;
 
@@ -191,13 +195,13 @@ void kbd_i_proc(int signum)
 	if (error != SUCCESS)
 		ps("KBD I PROC ERROR!");
 
-	printf("Inside keyboard I proc\n");
+	ps("Inside keyboard I proc");
 	MsgEnv* env = (MsgEnv*)k_receive_message();
 
 	if (env != NULL) {
 
 		fflush(stdout);
-		printf("Envelope recognized by kbd_i_proc\n");
+		ps("Envelope recognized by kbd_i_proc");
 		fflush(stdout);
 
 
@@ -265,7 +269,8 @@ void tick_handler(int signum) {
 int main()
 {
 
-	free_env_queue =MsgEnvQ_create();
+	free_env_queue = MsgEnvQ_create();
+	displayQueue = MsgEnvQ_create();
 
 	displayQueue = (MsgEnv*)malloc(sizeof(MsgEnv));
 
