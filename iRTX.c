@@ -59,7 +59,7 @@ void processP() {
         printf("Asking for Characters\n");
         fflush(stdout);
 		get_console_chars (env);
-		current_process = pid_to_pcb(P_PROCESS_ID);
+		current_process = (pcb*)pid_to_pcb(P_PROCESS_ID);
 		fflush(stdout);
 		printf("process changed to ProcessP\n");
 		fflush(stdout);
@@ -68,7 +68,7 @@ void processP() {
 		while(env==NULL) {
 			usleep(tWait);
 			printf("");
-			env = k_receive_message();
+			env = (MsgEnv*)k_receive_message();
 		}
 
 		fflush(stdout);
@@ -147,13 +147,13 @@ void crt_i_proc(int signum)
 {
 	printf("Inside CRT I proc\n");
 
-	current_process = pid_to_pcb(CRT_I_PROCESS_ID);
+	current_process = (pcb*)pid_to_pcb(CRT_I_PROCESS_ID);
 
-	MsgEnv* env = k_receive_message();
+	MsgEnv* env = (MsgEnv*)k_receive_message();
 	outputbuf command;
 
 	if (env==NULL) {
-		env = k_receive_message();
+		env = (MsgEnv*)k_receive_message();
 	}
 
 	fflush(stdout);
@@ -174,7 +174,7 @@ void kbd_i_proc(int signum)
 {
 
 	printf("Inside keyboard I proc\n");
-	MsgEnv* env = k_receive_message();
+	MsgEnv* env = (MsgEnv*)k_receive_message();
 
 	if (env != NULL) {
 
@@ -206,25 +206,6 @@ void kbd_i_proc(int signum)
 	}
 
 	return;
-
-/*
-
-	inputbuf command;
-
-	// copy input buffer
-	if (in_mem_p_key->indata[0] != '\0')
-	{
-	    strcpy(command.indata,in_mem_p_key->indata);
-
-	    // we should parse the input string and execute the command given,
-	    //  but for now we just echo the input
-	    //
-	    printf("Keyboard input was: %s\n",command.indata);
-	    in_mem_p_key->ok_flag = 0;  // tell child that the buffer has been emptied
-
-	}
-	*/
-
 }
 
 void die(int signal)
@@ -265,17 +246,18 @@ void tick_handler(int signum) {
 int main()
 {
 
-	free_env_queue = (MsgEnvQ*)MsgEnvQ_create();
+	free_env_queue =MsgEnvQ_create();
 
 
 	pcb_list[0] = (pcb*)malloc(sizeof(pcb));
 	pcb_list[1] = (pcb*)malloc(sizeof(pcb));
 	pcb_list[2] = (pcb*)malloc(sizeof(pcb));
+
 	pcb_list[0]->pid = KB_I_PROCESS_ID;
-	pcb_list[0]->priority = KB_I_PROCESS_ID;
+	pcb_list[0]->priority = 0;
 	pcb_list[0]->state = KB_I_PROCESS_ID;
 	pcb_list[0]->name = KB_I_PROCESS_ID;
-	pcb_list[0]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+	pcb_list[0]->rcv_msg_queue = MsgEnvQ_create();
 	pcb_list[0]->rcv_msg_queue->head = NULL;
 	pcb_list[0]->rcv_msg_queue->tail = NULL;
 	pcb_list[0]->is_i_process = TRUE;
@@ -284,7 +266,7 @@ int main()
 	pcb_list[1]->priority = CRT_I_PROCESS_ID;
 	pcb_list[1]->state = CRT_I_PROCESS_ID;
 	pcb_list[1]->name = CRT_I_PROCESS_ID;
-	pcb_list[1]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+	pcb_list[1]->rcv_msg_queue = MsgEnvQ_create();
 	pcb_list[1]->rcv_msg_queue->head = NULL;
 	pcb_list[1]->rcv_msg_queue->tail = NULL;
 	pcb_list[1]->is_i_process = TRUE;
@@ -293,7 +275,7 @@ int main()
 	pcb_list[2]->priority = P_PROCESS_ID;
 	pcb_list[2]->state = P_PROCESS_ID;
 	pcb_list[2]->name = P_PROCESS_ID;
-	pcb_list[2]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+	pcb_list[2]->rcv_msg_queue =  MsgEnvQ_create();
 	pcb_list[2]->rcv_msg_queue->head = NULL;
 	pcb_list[2]->rcv_msg_queue->tail = NULL;
 	pcb_list[2]->is_i_process = FALSE;

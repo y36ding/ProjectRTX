@@ -22,7 +22,7 @@ MsgEnv* k_request_msg_env()
 	if (MsgEnvQ_size(free_env_queue) == 0)
 		return NULL;
 
-	MsgEnv* free_env = MsgEnvQ_dequeue(free_env_queue);
+	MsgEnv* free_env = (MsgEnv*)MsgEnvQ_dequeue(free_env_queue);
 	return free_env;
 }
 
@@ -30,7 +30,7 @@ int k_release_message_env(MsgEnv* env)
 {
 	if (env == NULL)
 		return NULL_ARGUMENT;
-	MsgEnvQ_enqueue(free_env_queue,env);
+	MsgEnvQ_enqueue(free_env_queue, env);
 	// check processes blocked for allocate envelope
 	return SUCCESS;
 }
@@ -80,7 +80,7 @@ MsgEnv* k_receive_message()
 		printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
 	}
 	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
-		ret = MsgEnvQ_dequeue(current_process->rcv_msg_queue);
+		ret = (MsgEnv*)MsgEnvQ_dequeue(current_process->rcv_msg_queue);
 	}
 
 	return ret;
