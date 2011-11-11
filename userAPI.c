@@ -37,7 +37,7 @@ int get_console_chars(MsgEnv *message_envelope)
 int release_message_env(MsgEnv* env)
 {
 	atomic(ON);
-	int ret = (MsgEnv*)k_release_message_env(env);
+	int ret = k_release_message_env(env);
 	atomic(OFF);
 	return ret;
 

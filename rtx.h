@@ -56,7 +56,7 @@ typedef int bool;
 #define OKAY_TO_WRITE 0
 #define DONE_WRITING 1
 
-#define DEBUG 1
+#define DEBUG 0
 
 void die(int signal);
 
