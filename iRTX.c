@@ -447,8 +447,6 @@ int main()
        // usleep(10000);
         //printf("iRTX running");
 
-
-
 	// should never reach here, but in case we do, clean up after ourselves
 	cleanup();
 	exit(1);

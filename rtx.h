@@ -51,7 +51,7 @@ typedef int bool;
 
 typedef enum msg_type {
     CONSOLE_INPUT, CONSOLE_OUTPUT, DISPLAY_ACK, GET_CHAR, COUNT_REPORT, WAKEUP10
-}MsgType;
+}MsgType;	int priority;
 
 typedef struct MsgEnv {
    struct MsgEnv *next;
@@ -75,28 +75,32 @@ typedef struct msg_env_queue {
 
 typedef struct process_control_block {
 	int pid;
-	int priority;
 	ProcessState state;
 	char* name;
 	MsgEnvQ*  rcv_msg_queue;
-	//jmp_buf* context;
-	char* stack;
-	void* address;
 	struct process_control_block* next;
 	int a_count;
 	bool is_i_process;
 } pcb;
 
-typedef struct proc_queue {
-    pcb* head;
-    pcb* tail;
-}proc_queue_t;
+typedef struct init_proc
+{
+	char* name;
+	int pid;
+	int priority;
+	bool is_i_process;
+}InitProc;
 
 // global variables
 pcb* current_process;
 pcb* prev_process;
 MsgEnvQ* free_env_queue;
-pcb* pcb_list[3];
+pcb* pcb_list[PROCESS_COUNT];
+
+// Initialization Table
+InitProc init_table[PROCESS_COUNT] = {
+
+};
 
 #endif
 
