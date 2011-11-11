@@ -115,7 +115,7 @@ int k_get_console_chars(MsgEnv *message_envelope)
 
 	//current_process = pid_to_pcb(KB_I_PROCESS_ID);
 	ps("invoking kbd");
-	kbd_i_proc(0);
+	//kbd_i_proc(0);
 	if (DEBUG==1) {
 		printf("keyboard process returned to get-console-chars\n");
 	}

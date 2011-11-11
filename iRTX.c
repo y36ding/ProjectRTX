@@ -151,8 +151,10 @@ void crt_i_proc(int signum)
 			printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
 			ps("Got SIGUSR2");
 		}
-			displayQueue->msg_type = DISPLAY_ACK;
-			k_send_message(P_PROCESS_ID,displayQueue);
+			MsgEnv* envTemp = NULL;
+			envTemp = MsgEnvQ_dequeue(displayQ);
+			envTemp->msg_type = DISPLAY_ACK;
+			k_send_message(P_PROCESS_ID,envTemp);
 			ps("Display ACK sent by crt");
 			k_return_from_switch();
 			return;
@@ -182,7 +184,8 @@ void crt_i_proc(int signum)
 	if (DEBUG==1) {
 		printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
 	}
-	displayQueue = env;
+	MsgEnvQ_enqueue(displayQ,env);
+	//displayQueue = env;
 	in_mem_p_crt->ok_flag = 1;
 
 	k_return_from_switch();
@@ -207,24 +210,24 @@ void kbd_i_proc(int signum)
 
 		while (in_mem_p_key->ok_flag==0);
 
-				//if (in_mem_p_key->indata[0] != '\0') return;
-				//strcpy(env->data,in_mem_p_key->indata);
+		//if (in_mem_p_key->indata[0] != '\0') return;
+		//strcpy(env->data,in_mem_p_key->indata);
 
-				//env->data = "some data\0";
-				memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length + 1);
+		//env->data = "some data\0";
+		memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length + 1);
 
-				//k_send_message(env->sender_pid,env);
-				k_send_message(2,env);
-				if (DEBUG==1) {
-					fflush(stdout);
-					printf("Keyboard sent message\n");
-					fflush(stdout);
-				}
+		//k_send_message(env->sender_pid,env);
+		k_send_message(2,env);
+		if (DEBUG==1) {
+			fflush(stdout);
+			printf("Keyboard sent message\n");
+			fflush(stdout);
+		}
 
 
-			in_mem_p_key->ok_flag = 0;
-			k_return_from_switch();
-			return;
+		in_mem_p_key->ok_flag = 0;
+		k_return_from_switch();
+		return;
 
 	}
 	k_return_from_switch();
@@ -270,7 +273,7 @@ int main()
 {
 
 	free_env_queue = MsgEnvQ_create();
-	displayQueue = MsgEnvQ_create();
+	displayQ = MsgEnvQ_create();
 
 	displayQueue = (MsgEnv*)malloc(sizeof(MsgEnv));
 
@@ -347,7 +350,7 @@ int main()
 
 	// signal from keyboard reader is SIGUSR1 (user-defined signal)
 	// When there is input from the keyboard, call the kbd_i_proc() routine
-	//sigset(SIGUSR1,kbd_i_proc);
+	sigset(SIGUSR1,kbd_i_proc);
     sigset(SIGUSR2,crt_i_proc);
 
 	/* Create a new mmap file for read/write access with permissions restricted

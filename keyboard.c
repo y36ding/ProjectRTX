@@ -57,10 +57,10 @@ int main (int argc, char * argv[])
 	in_mem_p->ok_flag = 0; 
 	do
 	{
-		//local_irq_disable();
-		//printf(">>");
+		fflush(stdout);
+		printf(">>");
+		fflush(stdout);
 		c = getchar();
-		//local_irq_enable();
 		if ( c != '\n') {
 					if( buf_index < MAXCHAR-1 ) {
 						in_mem_p->indata[buf_index++] = c;
@@ -71,7 +71,7 @@ int main (int argc, char * argv[])
 					in_mem_p->indata[buf_index] = '\0';
 					in_mem_p->length = buf_index;
 					in_mem_p->ok_flag = 1;  //set ready status bit
-					//kill(parent_pid,SIGUSR1); //send a signal to parent
+					kill(parent_pid,SIGUSR1); //send a signal to parent
 					buf_index = 0;  // for now, just restart
 					while( in_mem_p->ok_flag == 1)
 						usleep(100000);
