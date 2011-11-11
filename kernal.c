@@ -65,7 +65,7 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 		fflush(stdout);
 
 		MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
-		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(pid_to_pcb(P_PROCESS_ID)->rcv_msg_queue));
+		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(dest_pcb->rcv_msg_queue));
 
 	}
 	return SUCCESS;
@@ -110,7 +110,7 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	message_envelope->msg_type = CONSOLE_INPUT;
 	int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
 
-	current_process = pid_to_pcb(KB_I_PROCESS_ID);
+	//current_process = pid_to_pcb(KB_I_PROCESS_ID);
 	kbd_i_proc(0);
 	if (DEBUG==1) {
 		printf("keyboard process returned to get-console-chars\n");
@@ -156,6 +156,8 @@ int k_pseudo_process_switch(int pid)
 		return ILLEGAL_ARGUMENT;
 	prev_process = current_process;
 	current_process = p;
+	pp(p);
+	pp(prev_process);
 	return SUCCESS;
 }
 
@@ -164,6 +166,8 @@ void k_return_from_switch()
 	pcb* temp = current_process;
 	current_process = prev_process;
 	prev_process = current_process;
+	pp(current_process);
+	pp(prev_process);
 }
 
 

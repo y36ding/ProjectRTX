@@ -40,30 +40,30 @@ char * cfilename = "crtBuffer";  //the name of the crt_memory file
 
 void processP()
 {
-    ps("ProcessP Started\n");
+
+    ps("ProcessP Started");
     const tWait = 500000;
 	MsgEnv* env;
 	env = request_msg_env();
 
 	env->sender_pid = current_process->pid;
-    ps("Envelopes Allocated\n");
+    ps("Envelopes Allocated");
 
 
 	while(1) {
 
-        ps("Asking for Characters\n");
+        ps("Asking for Characters");
 		get_console_chars (env);
-		ps("process changed to ProcessP\n");
+		ps("process changed to ProcessP");
 
 		env = receive_message();
-
 		while(env==NULL) {
 			usleep(tWait);
 			ps("");
 			env = (MsgEnv*)k_receive_message();
 		}
 
-		ps("processP got message from keyboard\n");
+		ps("processP got message from keyboard");
 
 		send_console_chars(env);
 		env = receive_message();
@@ -71,7 +71,7 @@ void processP()
 		while(env==NULL) {
 			usleep(tWait);
 
-			//current_process = pid_to_pcb(P_PROCESS_ID);
+			current_process = pid_to_pcb(P_PROCESS_ID);
 
 			env = receive_message();
 		}
@@ -154,6 +154,7 @@ void crt_i_proc(int signum)
 			displayQueue->msg_type = DISPLAY_ACK;
 			k_send_message(P_PROCESS_ID,displayQueue);
 			ps("Display ACK sent by crt");
+			k_return_from_switch();
 			return;
 		}
 	}
@@ -218,6 +219,7 @@ void kbd_i_proc(int signum)
 
 
 			in_mem_p_key->ok_flag = 0;
+			k_return_from_switch();
 			return;
 
 	}
