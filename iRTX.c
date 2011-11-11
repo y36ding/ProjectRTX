@@ -59,7 +59,6 @@ void processP()
 		env = receive_message();
 		while(env==NULL) {
 			usleep(tWait);
-			ps("");
 			env = (MsgEnv*)k_receive_message();
 		}
 
@@ -207,7 +206,7 @@ void kbd_i_proc(int signum)
 				//strcpy(env->data,in_mem_p_key->indata);
 
 				//env->data = "some data\0";
-				memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length);
+				memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length + 1);
 
 				//k_send_message(env->sender_pid,env);
 				k_send_message(2,env);
@@ -275,26 +274,26 @@ int main()
 
 	pcb_list[0]->pid = KB_I_PROCESS_ID;
 	pcb_list[0]->priority = 0;
-	pcb_list[0]->state = KB_I_PROCESS_ID;
-	pcb_list[0]->name = KB_I_PROCESS_ID;
+	pcb_list[0]->state = 0;
+	pcb_list[0]->name = "Keyboard I proc\0";
 	pcb_list[0]->rcv_msg_queue = MsgEnvQ_create();
 	pcb_list[0]->rcv_msg_queue->head = NULL;
 	pcb_list[0]->rcv_msg_queue->tail = NULL;
 	pcb_list[0]->is_i_process = TRUE;
 
 	pcb_list[1]->pid = CRT_I_PROCESS_ID;
-	pcb_list[1]->priority = CRT_I_PROCESS_ID;
-	pcb_list[1]->state = CRT_I_PROCESS_ID;
-	pcb_list[1]->name = CRT_I_PROCESS_ID;
+	pcb_list[1]->priority = 0;
+	pcb_list[1]->state = 0;
+	pcb_list[1]->name = "CRT I proc\0";
 	pcb_list[1]->rcv_msg_queue = MsgEnvQ_create();
 	pcb_list[1]->rcv_msg_queue->head = NULL;
 	pcb_list[1]->rcv_msg_queue->tail = NULL;
 	pcb_list[1]->is_i_process = TRUE;
 
 	pcb_list[2]->pid = P_PROCESS_ID;
-	pcb_list[2]->priority = P_PROCESS_ID;
-	pcb_list[2]->state = P_PROCESS_ID;
-	pcb_list[2]->name = P_PROCESS_ID;
+	pcb_list[2]->priority = 0;
+	pcb_list[2]->state = 0;
+	pcb_list[2]->name = "P proc\0";
 	pcb_list[2]->rcv_msg_queue =  MsgEnvQ_create();
 	pcb_list[2]->rcv_msg_queue->head = NULL;
 	pcb_list[2]->rcv_msg_queue->tail = NULL;

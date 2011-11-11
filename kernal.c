@@ -156,8 +156,6 @@ int k_pseudo_process_switch(int pid)
 		return ILLEGAL_ARGUMENT;
 	prev_process = current_process;
 	current_process = p;
-	pp(p);
-	pp(prev_process);
 	return SUCCESS;
 }
 
@@ -166,8 +164,6 @@ void k_return_from_switch()
 	pcb* temp = current_process;
 	current_process = prev_process;
 	prev_process = current_process;
-	pp(current_process);
-	pp(prev_process);
 }
 
 
