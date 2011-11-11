@@ -47,7 +47,7 @@ typedef int bool;
 #define TRUE 1
 #define FALSE 0
 
-#define DEBUG 0
+#define DEBUG 1
 
 typedef enum msg_type {
     CONSOLE_INPUT, CONSOLE_OUTPUT, DISPLAY_ACK, GET_CHAR, COUNT_REPORT, WAKEUP10

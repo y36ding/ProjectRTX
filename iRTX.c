@@ -29,8 +29,6 @@ char * sfilename = "keyboardBuffer";  //the name of the keyboard_memory file
 char * cfilename = "crtBuffer";  //the name of the crt_memory file
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-
 //**************************************************************************
 // routine to clean up things before terminating main program
 // This stuff must be cleaned up or we have child processes and shared
@@ -144,6 +142,9 @@ void cleanup()
 	printf("Freeing PCBs\n");
 	for (i = 0; i < PROCESS_COUNT; ++i)
 	{
+#if DEBUG
+		printf("Freeing pcb: %i\n", i+1);
+#endif
 		// deallocate memory until we reach location where allocation may have failed
 		if (pcb_list[i] == NULL)
 			break;
@@ -158,6 +159,9 @@ void cleanup()
 	printf("Freeing Messages and Their Data\n");
 	for (i = 0; i < MSG_ENV_COUNT; ++i)
 	{
+#if DEBUG
+		printf("Freeing envelope: %i\n", i+1);
+#endif
 		// deallocate memory until we reach location where allocation may have failed
 		if (msg_list[i] == NULL)
 			break;

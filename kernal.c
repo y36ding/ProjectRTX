@@ -76,7 +76,6 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 
 MsgEnv* k_receive_message()
 {
-
 	MsgEnv* ret = NULL;
 	if (DEBUG==1) {
 		fflush(stdout);
