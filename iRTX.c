@@ -14,48 +14,54 @@
 
 void processP()
 {
-
     ps("ProcessP Started");
     const tWait = 500000;
 	MsgEnv* env;
 	env = request_msg_env();
-
-	env->sender_pid = current_process->pid;
     ps("Envelopes Allocated");
 
-
-	while(1) {
-
+    while(1) {
         ps("Asking for Characters");
-		get_console_chars (env);
-		ps("process changed to ProcessP");
 
+        // Request keyboard input
+		get_console_chars (env);
+
+		ps("Back in Process P. Keyboard has taken input");
+		// Check if keyboard i proc sent a confirmation message
 		env = receive_message();
 		while(env==NULL) {
 			usleep(tWait);
 			env = (MsgEnv*)k_receive_message();
+			if (env != NULL && env->msg_type == CONSOLE_INPUT)
+			{
+#if DEBUG
+				printf("Keyboard Input Acknowledged");
+#endif
+			}
 		}
 
-		ps("processP got message from keyboard");
-
+		// Send the input to CRT
 		send_console_chars(env);
-		env = receive_message();
 
+		// Check if CRT displayed
+		env = receive_message();
 		while(env==NULL) {
 			usleep(tWait);
 
-			current_process = (pcb*)pid_to_pcb(P_PROCESS_ID);
+			//current_process = (pcb*)pid_to_pcb(P_PROCESS_ID);
 
 			env = receive_message();
+			if (env != NULL && env->msg_type == DISPLAY_ACK)
+			{
+#if DEBUG
+				printf("CRT Display Acknowledged");
+#endif
+			}
 		}
-
-		fflush(stdout);
-		ps("processP got message from CRT\n");
-		fflush(stdout);
-
 	}
 	release_msg_env(env);
 }
+
 
 void die(int signal)
 {
