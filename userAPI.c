@@ -32,7 +32,8 @@ int send_console_chars(MsgEnv *message_envelope)
 	atomic(FALSE);
 	return ret;
 }
-int get_console_chars(MsgEnv *message_envelope){
+int get_console_chars(MsgEnv *message_envelope)
+{
 	atomic(TRUE);
 	int ret = k_get_console_chars(message_envelope);
 	if (DEBUG==1) {
@@ -45,14 +46,14 @@ int get_console_chars(MsgEnv *message_envelope){
 
 int release_message_env(MsgEnv* env){
 	atomic(TRUE);
-	int ret = k_release_message_env(env);
+	MsgEnv* ret = (MsgEnv*)k_release_message_env(env);
 	atomic(FALSE);
 	return ret;
-
 }
+
 MsgEnv* request_msg_env(){
 	atomic(TRUE);
-	int ret = k_request_msg_env();
+	MsgEnv* ret = k_request_msg_env();
 	atomic(FALSE);
 	return ret;
 }

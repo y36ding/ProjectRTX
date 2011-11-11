@@ -49,9 +49,6 @@ typedef int bool;
 
 #define DEBUG 1
 
-//void kbd_i_proc(int signum);
-//void crt_i_proc(int signum);
-
 typedef enum msg_type {
     CONSOLE_INPUT, CONSOLE_OUTPUT, DISPLAY_ACK, GET_CHAR, COUNT_REPORT, WAKEUP10
 }MsgType;
@@ -97,6 +94,7 @@ typedef struct proc_queue {
 
 // global variables
 pcb* current_process;
+pcb* prev_process;
 MsgEnvQ* free_env_queue;
 pcb* pcb_list[3];
 MsgEnv* displayQueue;

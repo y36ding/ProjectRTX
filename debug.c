@@ -1,7 +1,6 @@
 #include "debug.h"
 #include "MsgEnvQueue.h"
 
-
 void pm(MsgEnv* env)
 {
 	fflush(stdout);
