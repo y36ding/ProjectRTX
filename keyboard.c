@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -15,8 +18,10 @@ int buf_index;
 // Basically, we rely on the parent process to cleanup shared memory
 void in_die(int signal)
 {
+	fflush(stdout);
 	printf("Keyboard exiting...\n");
-	exit(0);
+	fflush(stdout);
+	exit(1);
 }
 
 int main (int argc, char * argv[])
@@ -65,7 +70,7 @@ int main (int argc, char * argv[])
 					if( buf_index < MAXCHAR-1 ) {
 						in_mem_p->indata[buf_index++] = c;
 					} else {
-						printf("Limit Exceeded, will truncate at ");
+						printf("Limit Exceeded, will truncate at  ");
 					}
 				} else {
 					in_mem_p->indata[buf_index] = '\0';

@@ -46,9 +46,9 @@ int get_console_chars(MsgEnv *message_envelope)
 
 int release_message_env(MsgEnv* env){
 	atomic(TRUE);
-	MsgEnv* ret = (MsgEnv*)k_release_message_env(env);
+	int ret = k_release_message_env(env);
 	atomic(FALSE);
-	return ret;
+	return SUCCESS;
 }
 
 MsgEnv* request_msg_env(){
