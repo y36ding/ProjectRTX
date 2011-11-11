@@ -101,6 +101,17 @@ typedef struct init_proc
 	bool is_i_process;
 }InitProc;
 
+typedef struct proc_queue {
+    pcb *head;
+    pcb *tail;
+} proc_queue;
+
+typedef struct proc_pq {
+    int num_priorities;
+    proc_queue **priority_queues;
+} proc_pq;
+
+
 // global variables
 pcb* current_process;
 pcb* prev_process;
