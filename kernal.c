@@ -39,7 +39,7 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 {
 	if (DEBUG==1) {
 		fflush(stdout);
-		printf("In send message\n");
+		ps("In send message");
 		fflush(stdout);
 
 		fflush(stdout);

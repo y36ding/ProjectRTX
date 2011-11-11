@@ -97,7 +97,6 @@ pcb* current_process;
 pcb* prev_process;
 MsgEnvQ* free_env_queue;
 pcb* pcb_list[PROCESS_COUNT];
-MsgEnv* displayQueue;
-
+MsgEnvQ* displayQ;
 #endif
 
