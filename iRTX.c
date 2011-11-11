@@ -150,12 +150,13 @@ void crt_i_proc(int signum)
 			fflush(stdout);
 			printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
 			printf("Got SIGUSR2\n");
+		}
 			displayQueue->msg_type = DISPLAY_ACK;
 			k_send_message(P_PROCESS_ID,displayQueue);
 			ps("Display ACK sent by crt");
 			k_return_from_switch();
 			return;
-		}
+
 	}
 
 	MsgEnv* env = (MsgEnv*)k_receive_message();

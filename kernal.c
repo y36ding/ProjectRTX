@@ -63,11 +63,14 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 		fflush(stdout);
 		printf("Dest pid is %i\n",dest_pcb->pid);
 		fflush(stdout);
-
-		MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
-		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(dest_pcb->rcv_msg_queue));
-
 	}
+
+	MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
+	if (DEBUG==1){
+		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(dest_pcb->rcv_msg_queue));
+	}
+
+
 	return SUCCESS;
 }
 
@@ -111,6 +114,7 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
 
 	//current_process = pid_to_pcb(KB_I_PROCESS_ID);
+	ps("invoking kbd");
 	kbd_i_proc(0);
 	if (DEBUG==1) {
 		printf("keyboard process returned to get-console-chars\n");
