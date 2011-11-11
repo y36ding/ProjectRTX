@@ -52,10 +52,6 @@ typedef int bool;
 #define ON TRUE
 #define OFF FALSE
 
-// CRT/KB Flags
-#define OKAY_TO_WRITE 0
-#define DONE_WRITING 1
-
 #define DEBUG 0
 
 void die(int signal);

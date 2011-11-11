@@ -211,6 +211,10 @@ int init_mmaps() {
 		return SUCCESS;
 }
 
+//**************************************************************************
+// routine to clean up things before terminating main program
+// This stuff must be cleaned up or we have child processes and shared
+//	memory hanging around after the main process terminates
 void cleanup()
 {
 	// terminate child process(es)
@@ -266,12 +270,14 @@ void cleanup()
     // We try to ensure we don't try to free memory that was never allocated by always checking whether the pointer
     // is NULL or not
 	int i;
-	printf("Freeing All Queues\n");
+	ps("Freeing All Queues");
 	MsgEnvQ_destroy(free_env_queue);
-	MsgEnvQ_destroy(displayQ);
-	printf("Freeing PCBs\n");
+	ps("Freeing PCBs\n");
 	for (i = 0; i < PROCESS_COUNT; ++i)
 	{
+#if DEBUG
+		printf("Freeing pcb: %i\n", i+1);
+#endif
 		// deallocate memory until we reach location where allocation may have failed
 		if (pcb_list[i] == NULL)
 			break;
@@ -286,6 +292,9 @@ void cleanup()
 	printf("Freeing Messages and Their Data\n");
 	for (i = 0; i < MSG_ENV_COUNT; ++i)
 	{
+#if DEBUG
+		printf("Freeing envelope: %i\n", i+1);
+#endif
 		// deallocate memory until we reach location where allocation may have failed
 		if (msg_list[i] == NULL)
 			break;
@@ -300,7 +309,5 @@ void cleanup()
 				free(msg_list[i]);
 		}
 	}
-
 	exit(1);
-
 }
