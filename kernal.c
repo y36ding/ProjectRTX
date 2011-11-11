@@ -77,7 +77,7 @@ MsgEnv* k_receive_message()
 	MsgEnv* ret = NULL;
 	if (DEBUG==1) {
 		fflush(stdout);
-		printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
+		//printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
 	}
 	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
 		ret = MsgEnvQ_dequeue(current_process->rcv_msg_queue);

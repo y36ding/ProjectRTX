@@ -46,9 +46,7 @@ void processP() {
     const tWait = 500000;
 	//env = request_msg_env();
 	MsgEnv* env;
-	MsgEnv* env1;
 	env = request_msg_env();
-	env1 = request_msg_env();
 	env->sender_pid = 2;
     printf("Envelopes Allocated\n");
     fflush(stdout);
@@ -80,7 +78,11 @@ void processP() {
 
 		while(env==NULL) {
 			usleep(tWait);
-			env1 = receive_message();
+			fflush(stdout);
+			printf("waiting for CRT output\n");
+			fflush(stdout);
+			current_process = pid_to_pcb(P_PROCESS_ID);
+			env = receive_message();
 		}
 
 		fflush(stdout);
@@ -137,7 +139,7 @@ void cleanup()
 
     status = unlink(cfilename);
     if (status == -1){
-      printf("Bad unlink during claeanup.\n");
+      printf("Bad unlink during clean up.\n");
     } else {
       printf("Deleted the file used for shared CRT...\n");
     }
@@ -149,6 +151,18 @@ void crt_i_proc(int signum)
 
 	current_process = pid_to_pcb(CRT_I_PROCESS_ID);
 
+	if (signum == SIGUSR2) {
+		if (DEBUG==1) {
+			fflush(stdout);
+			printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
+			printf("Got SIGUSR2\n");
+			displayQueue->msg_type = DISPLAY_ACK;
+			k_send_message(P_PROCESS_ID,displayQueue);
+			ps("Display ACK sent by crt");
+			return;
+		}
+	}
+
 	MsgEnv* env = k_receive_message();
 	outputbuf command;
 
@@ -158,6 +172,8 @@ void crt_i_proc(int signum)
 
 	fflush(stdout);
 	printf("Message received by crt i proc\n");
+	fflush(stdout);
+	printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
 	printf("The message data section holds \"%s\" \n",env->data);
 
 	fflush(stdout);
@@ -165,6 +181,7 @@ void crt_i_proc(int signum)
 	//in_mem_p_crt->outdata[0] = env->data;
 	strcpy(in_mem_p_crt->outdata,env->data);
 	printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
+	displayQueue = env;
 	in_mem_p_crt->ok_flag = 1;
 
 	return;
@@ -267,6 +284,7 @@ int main()
 
 	free_env_queue = (MsgEnvQ*)MsgEnvQ_create();
 
+	displayQueue = (MsgEnv*)malloc(sizeof(MsgEnv));
 
 	pcb_list[0] = (pcb*)malloc(sizeof(pcb));
 	pcb_list[1] = (pcb*)malloc(sizeof(pcb));
@@ -339,6 +357,7 @@ int main()
 	// signal from keyboard reader is SIGUSR1 (user-defined signal)
 	// When there is input from the keyboard, call the kbd_i_proc() routine
 	//sigset(SIGUSR1,kbd_i_proc);
+    sigset(SIGUSR2,crt_i_proc);
 
 	/* Create a new mmap file for read/write access with permissions restricted
 	to owner rwx access only */

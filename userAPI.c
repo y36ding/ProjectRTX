@@ -13,13 +13,13 @@ MsgEnv *receive_message()
 	atomic(TRUE);
 	if (DEBUG==1) {
 		fflush(stdout);
-		printf("Calling receive message\n");
+		//printf("Calling receive message\n");
 		fflush(stdout);
 	}
 	MsgEnv* ret = k_receive_message();
 	if (DEBUG==1) {
 		fflush(stdout);
-		printf("Receive message returned\n");
+		//printf("Receive message returned\n");
 		fflush(stdout);
 	}
 	atomic(FALSE);
