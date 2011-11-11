@@ -63,11 +63,10 @@ int main (int argc, char * argv[])
 			usleep(100000);
 		}
 		fflush(stdout);
-		fflush(stdout);
-		printf("Output received\n");
-		printf("%s",in_mem_p->outdata);
+		printf("====================CRT OUTPUT: %s===================\n",in_mem_p->outdata);
 		fflush(stdout);
 		in_mem_p->ok_flag = 0;
+		kill(parent_pid,SIGUSR2);
 		
 	}while(1);  //an infinite loop - exit when parent signals us
 

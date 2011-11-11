@@ -4,7 +4,7 @@
 #define BUFFERSIZE 100;
 
 // structures for shared memory
-#define MAXCHAR 80	
+#define MAXCHAR 80
 
 typedef struct {
 	int ok_flag;

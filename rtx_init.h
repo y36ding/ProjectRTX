@@ -3,18 +3,10 @@
 
 #include "rtx.h"
 
-typedef struct init_proc
-{
-	char* name;
-	int pid;
-	int priority;
-	bool is_i_process;
-	int stack_size;
-	void* address;
-}InitialProcess;
+// A message list to keep track of all messages allocated at run time. Since the messages could be in multiple queues
+// at once once the OS starts, this is a convenient way of freeing their memory in the cleanup function
+MsgEnv* msg_list[MSG_ENV_COUNT];
 
-extern InitialProcess init_table[PROCESS_COUNT];
-
-void rtx_init();
+int init_all_lists();
 
 #endif

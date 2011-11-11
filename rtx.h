@@ -31,7 +31,7 @@
 #define P_PROCESS_ID 		   2
 
 // RTX Constants
-#define MSG_ENV_SIZE 1024
+#define MSG_ENV_SIZE 100
 #define MSG_ENV_COUNT 100
 #define NUM_PRIORITY_LEVEL 5
 #define PROCESS_COUNT 3
@@ -47,11 +47,11 @@ typedef int bool;
 #define TRUE 1
 #define FALSE 0
 
-#define DEBUG 1
+#define DEBUG 0
 
 typedef enum msg_type {
     CONSOLE_INPUT, CONSOLE_OUTPUT, DISPLAY_ACK, GET_CHAR, COUNT_REPORT, WAKEUP10
-}MsgType;	int priority;
+}MsgType;
 
 typedef struct MsgEnv {
    struct MsgEnv *next;
@@ -62,7 +62,7 @@ typedef struct MsgEnv {
 } MsgEnv;
 
 typedef enum process_states {
-    READY, EXECUTING, BLOCKED_ON_ENV_REQUEST, BLOCKED_ON_RCV, NO_BLK_RCV,
+    READY, EXECUTING, BLOCKED_ON_ENV_REQUEST, BLOCKED_ON_RCV, NEVER_BLK_RCV,
     SINTERRUPTED
 } ProcessState;
 
@@ -75,6 +75,7 @@ typedef struct msg_env_queue {
 
 typedef struct process_control_block {
 	int pid;
+	int priority;
 	ProcessState state;
 	char* name;
 	MsgEnvQ*  rcv_msg_queue;
@@ -96,11 +97,7 @@ pcb* current_process;
 pcb* prev_process;
 MsgEnvQ* free_env_queue;
 pcb* pcb_list[PROCESS_COUNT];
-
-// Initialization Table
-InitProc init_table[PROCESS_COUNT] = {
-
-};
+MsgEnv* displayQueue;
 
 #endif
 

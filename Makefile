@@ -35,9 +35,9 @@ all: crt iRTX keyboard clean
 #   programs
 #   these commands link the object files and libraries into executables 
 
-iRTX: debug.o iRTX.o userAPI.o MsgEnvQueue.o kernal.o
+iRTX: debug.o rtx_init.o iRTX.o userAPI.o MsgEnvQueue.o kernal.o
 	@echo linking iRTX.o file
-	$(LINK) $(LNFLAGS) debug.o iRTX.o userAPI.o MsgEnvQueue.o kernal.o -o iRTX
+	$(LINK) $(LNFLAGS) debug.o rtx_init.o iRTX.o userAPI.o MsgEnvQueue.o kernal.o -o iRTX
 
 crt:crt.o
 	@echo linking crt.o file
@@ -49,6 +49,9 @@ keyboard:keyboard.o
 
 
 #compile the source code into object files
+rtx_init.o: rtx_init.c
+	@echo building rtx_init.c
+	$(CC) $(CFLAGS) rtx_init.c
 
 debug.o: debug.c 
 	@echo building debug.c

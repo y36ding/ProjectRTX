@@ -40,35 +40,38 @@ char * cfilename = "crtBuffer";  //the name of the crt_memory file
 
 void processP()
 {
-    ps("ProcessP Started\n");
+
+    ps("ProcessP Started");
     const tWait = 500000;
 	MsgEnv* env;
 	env = request_msg_env();
 
 	env->sender_pid = current_process->pid;
-    ps("Envelopes Allocated\n");
+    ps("Envelopes Allocated");
+
 
 	while(1) {
 
-        ps("Asking for Characters\n");
+        ps("Asking for Characters");
 		get_console_chars (env);
-		ps("process changed to ProcessP\n");
+		ps("process changed to ProcessP");
 
 		env = receive_message();
-
 		while(env==NULL) {
 			usleep(tWait);
-			ps("");
 			env = (MsgEnv*)k_receive_message();
 		}
 
-		ps("processP got message from keyboard\n");
+		ps("processP got message from keyboard");
 
 		send_console_chars(env);
 		env = receive_message();
 
 		while(env==NULL) {
 			usleep(tWait);
+
+			current_process = pid_to_pcb(P_PROCESS_ID);
+
 			env = receive_message();
 		}
 
@@ -127,10 +130,47 @@ void cleanup()
 
     status = unlink(cfilename);
     if (status == -1){
-      printf("Bad unlink during claeanup.\n");
+      printf("Bad unlink during clean up.\n");
     } else {
       printf("Deleted the file used for shared CRT...\n");
     }
+
+    // It is possible allocation failed in initialization
+    // We try to ensure we don't try to free memory that was never allocated by always checking whether the pointer
+    // is NULL or not
+	int i;
+	printf("Freeing All Queues\n");
+	MsgEnvQ_destroy(free_env_queue);
+	printf("Freeing PCBs\n");
+	for (i = 0; i < PROCESS_COUNT; ++i)
+	{
+		// deallocate memory until we reach location where allocation may have failed
+		if (pcb_list[i] == NULL)
+			break;
+		else
+		{
+			MsgEnvQ_destroy(pcb_list[i]->rcv_msg_queue);
+			free(pcb_list[i]);
+		}
+	}
+
+	printf("Freeing Messages and Their Data\n");
+	for (i = 0; i < MSG_ENV_COUNT; ++i)
+	{
+		// deallocate memory until we reach location where allocation may have failed
+		if (msg_list[i] == NULL)
+			break;
+		else
+		{
+			if (msg_list[i]->data == NULL)
+			{
+				free(msg_list[i]);
+				break;
+			}
+			else
+				free(msg_list[i]);
+		}
+	}
 }
 
 void crt_i_proc(int signum)
@@ -141,7 +181,23 @@ void crt_i_proc(int signum)
 
 	printf("Inside CRT I proc\n");
 
+
+	if (signum == SIGUSR2) {
+		if (DEBUG==1) {
+			fflush(stdout);
+			printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
+			printf("Got SIGUSR2\n");
+		}
+			displayQueue->msg_type = DISPLAY_ACK;
+			k_send_message(P_PROCESS_ID,displayQueue);
+			ps("Display ACK sent by crt");
+			k_return_from_switch();
+			return;
+
+	}
+
 	MsgEnv* env = (MsgEnv*)k_receive_message();
+
 	outputbuf command;
 
 	if (env==NULL) {
@@ -150,6 +206,8 @@ void crt_i_proc(int signum)
 
 	fflush(stdout);
 	printf("Message received by crt i proc\n");
+	fflush(stdout);
+	printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
 	printf("The message data section holds \"%s\" \n",env->data);
 
 	fflush(stdout);
@@ -157,6 +215,7 @@ void crt_i_proc(int signum)
 	//in_mem_p_crt->outdata[0] = env->data;
 	strcpy(in_mem_p_crt->outdata,env->data);
 	printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
+	displayQueue = env;
 	in_mem_p_crt->ok_flag = 1;
 
 	k_return_from_switch();
@@ -185,7 +244,7 @@ void kbd_i_proc(int signum)
 				//strcpy(env->data,in_mem_p_key->indata);
 
 				//env->data = "some data\0";
-				memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length);
+				memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length + 1);
 
 				//k_send_message(env->sender_pid,env);
 				k_send_message(2,env);
@@ -197,8 +256,8 @@ void kbd_i_proc(int signum)
 
 
 			in_mem_p_key->ok_flag = 0;
+			k_return_from_switch();
 			return;
-
 	}
 	k_return_from_switch();
 	return;
@@ -211,93 +270,22 @@ void die(int signal)
 	exit(0);
 }
 
-
-
-
-void tick_handler(int signum) {
-
-	numOfTicks++;
-	if (displayClock == 1) {
-		int seconds = 0;
-		int mins = 0;
-		int hours = 0;
-
-		int numLeft = numOfTicks;
-
-		hours = numLeft/3600;
-		numLeft = numLeft%3600;
-
-		mins = numLeft/60;
-		numLeft = numLeft%60;
-
-		seconds = numLeft;
-
-		printf("Time Elapsed: %.2d:%.2d:%.2d\n",hours,mins,seconds);
-	}
-	alarm(1);
-
-}
-
 //**************************************************************************
 int main()
 {
 
 	free_env_queue =MsgEnvQ_create();
+	displayQueue = (MsgEnv*)malloc(sizeof(MsgEnv));
 
-
-	pcb_list[0] = (pcb*)malloc(sizeof(pcb));
-	pcb_list[1] = (pcb*)malloc(sizeof(pcb));
-	pcb_list[2] = (pcb*)malloc(sizeof(pcb));
-
-	pcb_list[0]->pid = KB_I_PROCESS_ID;
-	pcb_list[0]->priority = 0;
-	pcb_list[0]->state = KB_I_PROCESS_ID;
-	pcb_list[0]->name = KB_I_PROCESS_ID;
-	pcb_list[0]->rcv_msg_queue = MsgEnvQ_create();
-	pcb_list[0]->rcv_msg_queue->head = NULL;
-	pcb_list[0]->rcv_msg_queue->tail = NULL;
-	pcb_list[0]->is_i_process = TRUE;
-
-	pcb_list[1]->pid = CRT_I_PROCESS_ID;
-	pcb_list[1]->priority = CRT_I_PROCESS_ID;
-	pcb_list[1]->state = CRT_I_PROCESS_ID;
-	pcb_list[1]->name = CRT_I_PROCESS_ID;
-	pcb_list[1]->rcv_msg_queue = MsgEnvQ_create();
-	pcb_list[1]->rcv_msg_queue->head = NULL;
-	pcb_list[1]->rcv_msg_queue->tail = NULL;
-	pcb_list[1]->is_i_process = TRUE;
-
-	pcb_list[2]->pid = P_PROCESS_ID;
-	pcb_list[2]->priority = P_PROCESS_ID;
-	pcb_list[2]->state = P_PROCESS_ID;
-	pcb_list[2]->name = P_PROCESS_ID;
-	pcb_list[2]->rcv_msg_queue =  MsgEnvQ_create();
-	pcb_list[2]->rcv_msg_queue->head = NULL;
-	pcb_list[2]->rcv_msg_queue->tail = NULL;
-	pcb_list[2]->is_i_process = FALSE;
-
-	fflush(stdout);
-	if (DEBUG==1) {
-		printf("Length of the two MsgEnv queues are %i and %i",MsgEnvQ_size(pcb_list[0]->rcv_msg_queue),MsgEnvQ_size(pcb_list[2]->rcv_msg_queue) );
-	}
-
-	current_process = pcb_list[2];
-	prev_process = current_process;
-
-	// Initialize envelopes
-	free_env_queue = (MsgEnvQ*)malloc(sizeof(MsgEnvQ));
-	free_env_queue->head = NULL;
-	free_env_queue->tail = NULL;
-
-	int i;
-	for (i = 0; i < MSG_ENV_COUNT; i++)
+	if (init_all_lists() != SUCCESS)
 	{
-		MsgEnv* env = (MsgEnv*)malloc(sizeof(MsgEnv));
-		env->data = (char*)malloc(sizeof(char)*40);
-		if (env)
-			MsgEnvQ_enqueue(free_env_queue, env);
-		// deal with non null later
+		printf("Failed to initialize the process and message envelope list. Exiting the OS.\n");
+		cleanup();
 	}
+
+	current_process = pid_to_pcb(P_PROCESS_ID);
+	current_process->state = NEVER_BLK_RCV;
+	prev_process = current_process;
 
 	//signals
 	// catch signals so we can clean up everything before exitting
@@ -312,13 +300,10 @@ int main()
 	sigset(SIGTERM,die);
 	sigset(SIGSEGV,die);	// catch segmentation faults
 
-	sigset(SIGALRM,tick_handler);
-
-    alarm(1);
-
 	// signal from keyboard reader is SIGUSR1 (user-defined signal)
 	// When there is input from the keyboard, call the kbd_i_proc() routine
 	//sigset(SIGUSR1,kbd_i_proc);
+    sigset(SIGUSR2,crt_i_proc);
 
 	/* Create a new mmap file for read/write access with permissions restricted
 	to owner rwx access only */
@@ -437,15 +422,9 @@ int main()
 	// we can now use 'in_mem_p' as a standard C pointer to access
 	// the created shared memory segment
 
-
 	in_mem_p_crt->ok_flag = 0;
 
     processP();
-
-	while (1);
-
-       // usleep(10000);
-        //printf("iRTX running");
 
 	// should never reach here, but in case we do, clean up after ourselves
 	cleanup();

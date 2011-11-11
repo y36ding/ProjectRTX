@@ -63,11 +63,14 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 		fflush(stdout);
 		printf("Dest pid is %i\n",dest_pcb->pid);
 		fflush(stdout);
-
-		MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
-		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(pid_to_pcb(P_PROCESS_ID)->rcv_msg_queue));
-
 	}
+
+	MsgEnvQ_enqueue(dest_pcb->rcv_msg_queue, msg_envelope);
+	if (DEBUG==1){
+		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(dest_pcb->rcv_msg_queue));
+	}
+
+
 	return SUCCESS;
 }
 
@@ -77,14 +80,14 @@ MsgEnv* k_receive_message()
 	MsgEnv* ret = NULL;
 	if (DEBUG==1) {
 		fflush(stdout);
-		printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
+		//printf("Current PCB msgQ size is %i for PID %i\n", MsgEnvQ_size(current_process->rcv_msg_queue), current_process->pid );
 	}
 	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
 		ret = (MsgEnv*)MsgEnvQ_dequeue(current_process->rcv_msg_queue);
 	}
 	else
 	{
-		if (current_process->is_i_process == TRUE || current_process->state == NO_BLK_RCV)
+		if (current_process->is_i_process == TRUE || current_process->state == NEVER_BLK_RCV)
 			return ret;
 	}
 
@@ -110,7 +113,8 @@ int k_get_console_chars(MsgEnv *message_envelope)
 	message_envelope->msg_type = CONSOLE_INPUT;
 	int retVal = k_send_message( KB_I_PROCESS_ID, message_envelope);
 
-	current_process = pid_to_pcb(KB_I_PROCESS_ID);
+	//current_process = pid_to_pcb(KB_I_PROCESS_ID);
+	ps("invoking kbd");
 	kbd_i_proc(0);
 	if (DEBUG==1) {
 		printf("keyboard process returned to get-console-chars\n");
