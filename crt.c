@@ -59,16 +59,16 @@ int main (int argc, char * argv[])
 
 	// read keyboard
 	buf_index = 0;
-	in_mem_p->ok_flag = 0; 
+	in_mem_p->ok_flag = WAITING_TO_BE_WRITTEN;
 	do
 	{
-		while(in_mem_p->ok_flag == 0) {
+		while(in_mem_p->ok_flag == WAITING_TO_BE_WRITTEN) {
 			usleep(100000);
 		}
 		fflush(stdout);
 		printf("====================CRT OUTPUT: %s===================\n",in_mem_p->outdata);
 		fflush(stdout);
-		in_mem_p->ok_flag = 0;
+		in_mem_p->ok_flag = WAITING_TO_BE_WRITTEN;
 		kill(parent_pid,SIGUSR2);
 		
 	}while(1);  //an infinite loop - exit when parent signals us
