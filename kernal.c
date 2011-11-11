@@ -82,6 +82,11 @@ MsgEnv* k_receive_message()
 	if (MsgEnvQ_size(current_process->rcv_msg_queue) > 0){
 		ret = (MsgEnv*)MsgEnvQ_dequeue(current_process->rcv_msg_queue);
 	}
+	else
+	{
+		if (current_process->is_i_process == TRUE || current_process->state == NO_BLK_RCV)
+			return ret;
+	}
 
 	return ret;
 }
@@ -143,4 +148,22 @@ void atomic(bool state)
 		}
 	}
 }
+
+int k_pseudo_process_switch(int pid)
+{
+	pcb* p = (pcb*)pid_to_pcb(pid);
+	if (p == NULL)
+		return ILLEGAL_ARGUMENT;
+	prev_process = current_process;
+	current_process = p;
+	return SUCCESS;
+}
+
+void k_return_from_switch()
+{
+	pcb* temp = current_process;
+	current_process = prev_process;
+	prev_process = current_process;
+}
+
 

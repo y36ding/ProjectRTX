@@ -38,56 +38,46 @@ char * cfilename = "crtBuffer";  //the name of the crt_memory file
 
 //this function should be called in terminate
 
-void processP() {
-
-    printf("ProcessP Started\n");
-    fflush(stdout);
-
+void processP()
+{
+    ps("ProcessP Started\n");
     const tWait = 500000;
-	//env = request_msg_env();
 	MsgEnv* env;
-	MsgEnv* env1;
 	env = request_msg_env();
-	env1 = request_msg_env();
-	env->sender_pid = 2;
-    printf("Envelopes Allocated\n");
-    fflush(stdout);
-    //printMsgEnv(env1);
+
+	env->sender_pid = current_process->pid;
+    ps("Envelopes Allocated\n");
 
 	while(1) {
 
-        printf("Asking for Characters\n");
-        fflush(stdout);
+        ps("Asking for Characters\n");
 		get_console_chars (env);
-		current_process = (pcb*)pid_to_pcb(P_PROCESS_ID);
-		fflush(stdout);
-		printf("process changed to ProcessP\n");
-		fflush(stdout);
+		ps("process changed to ProcessP\n");
+
 		env = receive_message();
 
 		while(env==NULL) {
 			usleep(tWait);
-			printf("");
+			ps("");
 			env = (MsgEnv*)k_receive_message();
 		}
 
-		fflush(stdout);
-		printf("processP got message from keyboard\n");
-		fflush(stdout);
+		ps("processP got message from keyboard\n");
 
 		send_console_chars(env);
 		env = receive_message();
 
 		while(env==NULL) {
 			usleep(tWait);
-			env1 = receive_message();
+			env = receive_message();
 		}
 
 		fflush(stdout);
-		printf("processP got message from CRT\n");
+		ps("processP got message from CRT\n");
 		fflush(stdout);
 
 	}
+	release_msg_env(env);
 }
 
 void cleanup()
@@ -145,9 +135,11 @@ void cleanup()
 
 void crt_i_proc(int signum)
 {
-	printf("Inside CRT I proc\n");
+	int error = k_pseudo_process_switch(CRT_I_PROCESS_ID);
+	if (error != SUCCESS)
+		ps("CRT I PROC ERROR!");
 
-	current_process = (pcb*)pid_to_pcb(CRT_I_PROCESS_ID);
+	printf("Inside CRT I proc\n");
 
 	MsgEnv* env = (MsgEnv*)k_receive_message();
 	outputbuf command;
@@ -167,11 +159,15 @@ void crt_i_proc(int signum)
 	printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
 	in_mem_p_crt->ok_flag = 1;
 
+	k_return_from_switch();
 	return;
 }
 
 void kbd_i_proc(int signum)
 {
+	int error = k_pseudo_process_switch(KB_I_PROCESS_ID);
+	if (error != SUCCESS)
+		ps("KBD I PROC ERROR!");
 
 	printf("Inside keyboard I proc\n");
 	MsgEnv* env = (MsgEnv*)k_receive_message();
@@ -204,7 +200,7 @@ void kbd_i_proc(int signum)
 			return;
 
 	}
-
+	k_return_from_switch();
 	return;
 }
 
@@ -286,16 +282,18 @@ int main()
 	}
 
 	current_process = pcb_list[2];
+	prev_process = current_process;
 
 	// Initialize envelopes
 	free_env_queue = (MsgEnvQ*)malloc(sizeof(MsgEnvQ));
 	free_env_queue->head = NULL;
 	free_env_queue->tail = NULL;
+
 	int i;
 	for (i = 0; i < MSG_ENV_COUNT; i++)
 	{
 		MsgEnv* env = (MsgEnv*)malloc(sizeof(MsgEnv));
-		env->data = (char*)malloc(40);
+		env->data = (char*)malloc(sizeof(char)*40);
 		if (env)
 			MsgEnvQ_enqueue(free_env_queue, env);
 		// deal with non null later

@@ -94,6 +94,7 @@ typedef struct proc_queue {
 
 // global variables
 pcb* current_process;
+pcb* prev_process;
 MsgEnvQ* free_env_queue;
 pcb* pcb_list[3];
 

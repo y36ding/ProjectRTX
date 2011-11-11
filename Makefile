@@ -70,7 +70,7 @@ keyboard.o: keyboard.c
 	@echo building keyboard.c
 	$(CC) $(CFLAGS) keyboard.c 
 
-iRTX.o: iRTX.c rtx.h
+iRTX.o: iRTX.c
 	@echo building iRTX.c
 	$(CC) $(CFLAGS) iRTX.c
 	

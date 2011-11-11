@@ -50,6 +50,7 @@ int release_message_env(MsgEnv* env){
 	atomic(FALSE);
 	return ret;
 }
+
 MsgEnv* request_msg_env(){
 	atomic(TRUE);
 	MsgEnv* ret = k_request_msg_env();

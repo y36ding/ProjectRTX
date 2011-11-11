@@ -15,4 +15,6 @@ int k_send_console_chars(MsgEnv *message_envelope);
 int k_release_message_env(MsgEnv* env);
 MsgEnv* k_request_msg_env();
 
+int k_pseudo_process_switch(int pid);
+void k_return_from_switch();
 #endif
