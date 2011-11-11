@@ -17,10 +17,8 @@
 
 #include <unistd.h>
 
-
 #include <stdint.h>
 #include <stddef.h>
-
 #include <string.h>
 #include <stdlib.h>
 
@@ -32,7 +30,7 @@
 
 // RTX Constants
 #define MSG_ENV_SIZE 100
-#define MSG_ENV_COUNT 100
+#define MSG_ENV_COUNT 50
 #define NUM_PRIORITY_LEVEL 5
 #define PROCESS_COUNT 3
 #define STACK_SIZE 100
@@ -47,10 +45,18 @@ typedef int bool;
 #define TRUE 1
 #define FALSE 0
 
+// atomic flags
+#define ON TRUE
+#define OFF FALSE
+
+// CRT/KB Flags
+#define OKAY_TO_WRITE 0
+#define DONE_WRITING 1
+
 #define DEBUG 1
 
 typedef enum msg_type {
-    CONSOLE_INPUT, CONSOLE_OUTPUT, DISPLAY_ACK, GET_CHAR, COUNT_REPORT, WAKEUP10
+    CONSOLE_INPUT, DISPLAY_ACK, COUNT_REPORT, WAKEUP10
 }MsgType;
 
 typedef struct MsgEnv {
@@ -70,8 +76,6 @@ typedef struct msg_env_queue {
 	MsgEnv* head;
 	MsgEnv* tail;
 }MsgEnvQ;
-
-
 
 typedef struct process_control_block {
 	int pid;

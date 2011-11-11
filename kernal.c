@@ -31,29 +31,25 @@ int k_release_message_env(MsgEnv* env)
 	if (env == NULL)
 		return NULL_ARGUMENT;
 	MsgEnvQ_enqueue(free_env_queue, env);
-	// check processes blocked for allocate envelope
+	// check processes blocked for allocate envelope later
 	return SUCCESS;
 }
 
 int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 {
 	if (DEBUG==1) {
-		fflush(stdout);
 		ps("In send message");
-		fflush(stdout);
 
 		fflush(stdout);
 		printf("Dest process id is %i\n",dest_process_id);
 		fflush(stdout);
 	}
-	//pcb* dest_pcb =  pid_to_pcb(dest_process_id);
-	pcb* dest_pcb = pcb_list[dest_process_id];
+	pcb* dest_pcb =  pid_to_pcb(dest_process_id);
 
 	if (!dest_pcb || !msg_envelope) {
-		return NULL_ARGUMENT;
 		printf("The destPCB or MSG_ENV is empty\n");
+		return NULL_ARGUMENT;
 	}
-
 
 	msg_envelope->sender_pid = current_process->pid;
 	msg_envelope->dest_pid = dest_process_id;
@@ -69,8 +65,6 @@ int k_send_message(int dest_process_id, MsgEnv *msg_envelope)
 	if (DEBUG==1){
 		printf("message SENT on enqueued on PID %i and its size is %i\n",dest_pcb->pid,MsgEnvQ_size(dest_pcb->rcv_msg_queue));
 	}
-
-
 	return SUCCESS;
 }
 
@@ -132,13 +126,18 @@ void atomic(bool state)
 	if (state == TRUE)
 	{
 		current_process->a_count ++; //every time a primitive is called, increment by 1
+
 		//mask the signals, so atomicity is enforced
-		sigemptyset(&newmask);
-		sigaddset(&newmask, SIGALRM); //the alarm signal
-		sigaddset(&newmask, SIGINT); // the CNTRL-C
-		sigaddset(&newmask, SIGUSR1); // the KB signal
-		sigaddset(&newmask, SIGUSR2); // the CRT signal
-		sigprocmask(SIG_BLOCK, &newmask, &oldmask);
+		// if first time of atomic on
+		if (current_process->a_count == 1)
+		{
+			sigemptyset(&newmask);
+			sigaddset(&newmask, SIGALRM); //the alarm signal
+			sigaddset(&newmask, SIGINT); // the CNTRL-C
+			sigaddset(&newmask, SIGUSR1); // the KB signal
+			sigaddset(&newmask, SIGUSR2); // the CRT signal
+			sigprocmask(SIG_BLOCK, &newmask, &oldmask);
+		}
 	}
 	else
 	{

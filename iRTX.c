@@ -29,61 +29,59 @@ char * sfilename = "keyboardBuffer";  //the name of the keyboard_memory file
 char * cfilename = "crtBuffer";  //the name of the crt_memory file
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-//**************************************************************************
-// routine to clean up things before terminating main program
-// This stuff must be cleaned up or we have child processes and shared
-//	memory hanging around after the main process terminates
-
-//this function should be called in terminate
-
 void processP()
 {
-
     ps("ProcessP Started");
     const tWait = 500000;
 	MsgEnv* env;
 	env = request_msg_env();
-
-	env->sender_pid = current_process->pid;
     ps("Envelopes Allocated");
 
-
-	while(1) {
-
+    while(1) {
         ps("Asking for Characters");
-		get_console_chars (env);
-		ps("process changed to ProcessP");
 
+        // Request keyboard input
+		get_console_chars (env);
+
+		ps("Back in Process P. Keyboard has taken input");
+		// Check if keyboard i proc sent a confirmation message
 		env = receive_message();
 		while(env==NULL) {
 			usleep(tWait);
 			env = (MsgEnv*)k_receive_message();
+			if (env != NULL && env->msg_type == CONSOLE_INPUT)
+			{
+#if DEBUG
+				printf("Keyboard Input Acknowledged");
+#endif
+			}
 		}
 
-		ps("processP got message from keyboard");
-
+		// Send the input to CRT
 		send_console_chars(env);
-		env = receive_message();
 
+		// Check if CRT displayed
+		env = receive_message();
 		while(env==NULL) {
 			usleep(tWait);
-
-			current_process = pid_to_pcb(P_PROCESS_ID);
-
 			env = receive_message();
+			if (env != NULL && env->msg_type == DISPLAY_ACK)
+			{
+#if DEBUG
+				printf("CRT Display Acknowledged");
+#endif
+			}
 		}
-
-		fflush(stdout);
-		ps("processP got message from CRT\n");
-		fflush(stdout);
-
 	}
 	release_msg_env(env);
 }
 
+//**************************************************************************
+// routine to clean up things before terminating main program
+// This stuff must be cleaned up or we have child processes and shared
+//	memory hanging around after the main process terminates
 void cleanup()
 {
-
 	// terminate child process(es)
 	kill(in_pid_keyboard,SIGINT);
 	kill(in_pid_crt,SIGINT);
@@ -137,9 +135,9 @@ void cleanup()
     // We try to ensure we don't try to free memory that was never allocated by always checking whether the pointer
     // is NULL or not
 	int i;
-	printf("Freeing All Queues\n");
+	ps("Freeing All Queues");
 	MsgEnvQ_destroy(free_env_queue);
-	printf("Freeing PCBs\n");
+	ps("Freeing PCBs\n");
 	for (i = 0; i < PROCESS_COUNT; ++i)
 	{
 #if DEBUG
@@ -181,53 +179,61 @@ void cleanup()
 void crt_i_proc(int signum)
 {
 	int error = k_pseudo_process_switch(CRT_I_PROCESS_ID);
+
 	if (error != SUCCESS)
-		ps("CRT I PROC ERROR!");
+	{
+		printf("Error! Process Switch failed in CRT I process");
+		cleanup();
+		return;
+	}
 
 	ps("Inside CRT I proc");
 
-
-	if (signum == SIGUSR2) {
-		if (DEBUG==1) {
+	if (signum == SIGUSR2)
+	{
+#if DEBUG
 			fflush(stdout);
 			printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
 			ps("Got SIGUSR2");
-		}
+#endif
+
 			MsgEnv* envTemp = NULL;
 			envTemp = MsgEnvQ_dequeue(displayQ);
+			if (envTemp == NULL)
+			{
+				printf("Warning: Recieved a signal in CRT I process but there was no message.");
+				return;
+			}
 			envTemp->msg_type = DISPLAY_ACK;
-			k_send_message(P_PROCESS_ID,envTemp);
+			k_send_message(P_PROCESS_ID, envTemp);
 			ps("Display ACK sent by crt");
 			k_return_from_switch();
 			return;
-
 	}
 
 	MsgEnv* env = (MsgEnv*)k_receive_message();
-
 	outputbuf command;
 
 	if (env==NULL) {
 		env = (MsgEnv*)k_receive_message();
 	}
 
-	if (DEBUG==1) {
+#if DEBUG
 		fflush(stdout);
 		printf("Message received by crt i proc\n");
 		fflush(stdout);
 		printf("Current PCB msgQ size is %i for process 1\n", MsgEnvQ_size(current_process->rcv_msg_queue) );
 		printf("The message data section holds \"%s\" \n",env->data);
 		fflush(stdout);
-	}
+#endif
 
-	//in_mem_p_crt->outdata[0] = env->data;
 	strcpy(in_mem_p_crt->outdata,env->data);
 
-	if (DEBUG==1) {
+#if DEBUG
 		printf("The message data section holds \"%s\" \n",in_mem_p_crt->outdata);
-	}
+#endif
+
 	MsgEnvQ_enqueue(displayQ,env);
-	//displayQueue = env;
 	in_mem_p_crt->ok_flag = 1;
 
 	k_return_from_switch();
@@ -238,34 +244,29 @@ void kbd_i_proc(int signum)
 {
 	int error = k_pseudo_process_switch(KB_I_PROCESS_ID);
 	if (error != SUCCESS)
-		ps("KBD I PROC ERROR!");
+	{
+		printf("Error! Context Switch failed in keyboard I process");
+		cleanup();
+	}
 
 	ps("Inside keyboard I proc");
 	MsgEnv* env = (MsgEnv*)k_receive_message();
 
-	if (env != NULL) {
-
-		fflush(stdout);
+	if (env != NULL)
+	{
 		ps("Envelope recognized by kbd_i_proc");
-		fflush(stdout);
 
+		// Loop until writing in shared memory is done
+		while (in_mem_p_key->ok_flag==OKAY_TO_WRITE);
 
-		while (in_mem_p_key->ok_flag==0);
-
-		//if (in_mem_p_key->indata[0] != '\0') return;
-		//strcpy(env->data,in_mem_p_key->indata);
-
-		//env->data = "some data\0";
 		memcpy(env->data,in_mem_p_key->indata,in_mem_p_key->length + 1);
 
-		//k_send_message(env->sender_pid,env);
-		k_send_message(2,env);
-		if (DEBUG==1) {
-			fflush(stdout);
-			printf("Keyboard sent message\n");
-			fflush(stdout);
-		}
-		in_mem_p_key->ok_flag = 0;
+		// Send message back to process that called us
+		k_send_message(env->sender_pid ,env);
+
+		ps("Keyboard sent message");
+
+		in_mem_p_key->ok_flag = OKAY_TO_WRITE; // okay to write again
 		k_return_from_switch();
 		return;
 	}
