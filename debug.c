@@ -11,8 +11,7 @@ void pm(MsgEnv* env)
 		printf("Envelope is NULL\n");
 	else
 	{
-		printf("Message envelope contents:\ndest_pid:%i\nsender_pid:%i\nMsgType:%i\ndata:%s\nNext Pcb Adress:%p\n ",
-				env->	dest_pid, env->sender_pid,env->msg_type,env->data,env->next);
+		printf("Message envelope contents:\ndest_pid:%i\nsender_pid:%i\nMsgType:%i\ndata:%s\nNext Pcb Adress:%p\n ",	env->dest_pid, env->sender_pid,env->msg_type,env->data,env->next);
 	}
 	printf("=============================\n");
 

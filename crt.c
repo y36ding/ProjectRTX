@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,7 +17,9 @@ int buf_index;
 // Basically, we rely on the parent process to cleanup shared memory
 void in_die(int signal)
 {
+	fflush(stdout);
 	printf("CRT exiting...\n");
+	fflush(stdout);
 	exit(0);
 }
 
@@ -50,11 +51,10 @@ int main (int argc, char * argv[])
 		    MAP_SHARED,    /* Accessible by another process */
 		    fid,           /* which file is associated with mmap */
 		    (off_t) 0);    /* Offset in page frame */
-    if (mmap_ptr == MAP_FAILED){
-      printf("Child memory map has failed, CRT is aborting!\n");
-	  in_die(0);
-    }
-	
+	if (mmap_ptr == MAP_FAILED){
+		printf("Child memory map has failed, CRT is aborting!\n");
+		in_die(0);
+	}
 	in_mem_p = (outputbuf *) mmap_ptr; // now we have a shared memory pointer
 
 	// read keyboard
@@ -66,7 +66,8 @@ int main (int argc, char * argv[])
 			usleep(100000);
 		}
 		fflush(stdout);
-		printf("====================CRT OUTPUT: %s===================\n",in_mem_p->outdata);
+		//printf("====================CRT OUTPUT: %s===================\n",in_mem_p->outdata);
+		printf("%s\n", in_mem_p->outdata);
 		fflush(stdout);
 		in_mem_p->ok_flag = WAITING_TO_BE_WRITTEN;
 		kill(parent_pid,SIGUSR2);
@@ -76,3 +77,4 @@ int main (int argc, char * argv[])
 } // CRT
 
 
+	

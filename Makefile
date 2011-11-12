@@ -35,9 +35,9 @@ all: crt iRTX keyboard clean
 #   programs
 #   these commands link the object files and libraries into executables 
 
-iRTX: debug.o rtx_init.o iRTX.o userAPI.o MsgEnvQueue.o kernal.o iProcs.o procPQ.o processQ.o
+iRTX: debug.o rtx_init.o iRTX.o userAPI.o MsgEnvQueue.o kernal.o iProcs.o rtx_extern.o
 	@echo linking iRTX.o file
-	$(LINK) $(LNFLAGS) debug.o rtx_init.o iRTX.o userAPI.o MsgEnvQueue.o iProcs.o kernal.o procPQ.o processQ.o -o iRTX
+	$(LINK) $(LNFLAGS) debug.o rtx_init.o iRTX.o userAPI.o MsgEnvQueue.o iProcs.o kernal.o rtx_extern.o -o iRTX
 
 crt:crt.o
 	@echo linking crt.o file
@@ -60,6 +60,10 @@ debug.o: debug.c
 crt.o: crt.c 
 	@echo building crt.c
 	$(CC) $(CFLAGS) crt.c
+	
+rtx_extern.o: rtx_extern.c 
+	@echo building rtx_extern.c
+	$(CC) $(CFLAGS) rtx_extern.c
 	
 MsgEnvQueue.o:	MsgEnvQueue.c 
 	@echo building MsgEnvQueue
@@ -88,14 +92,6 @@ processP.o: processP.c
 iProcs.o: iProcs.c
 	@echo building iProcs.c
 	$(CC) $(CFLAGS) iProcs.c
-	
-procPQ.o: procPQ.c
-	@echo building procPQ.c
-	$(CC) $(CFLAGS) procPQ.c
-	
-processQ.o: processQ.c
-	@echo building processQ.c
-	$(CC) $(CFLAGS) processQ.c
 
 clean:
 	@echo Cleaning object files

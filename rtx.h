@@ -27,32 +27,32 @@
 
 
 // Process IDs
-#define KB_I_PROCESS_ID        0
-#define CRT_I_PROCESS_ID       1
-#define P_PROCESS_ID 		   2
+#define KB_I_PROCESS_ID 	0
+#define CRT_I_PROCESS_ID	1
+#define P_PROCESS_ID 		2
 
 // RTX Constants
-#define MSG_ENV_SIZE 100
-#define MSG_ENV_COUNT 50
-#define NUM_PRIORITY_LEVEL 5
-#define PROCESS_COUNT 3
-#define STACK_SIZE 100
+#define MSG_ENV_SIZE 		100
+#define MSG_ENV_COUNT 		50
+#define NUM_PRIORITY_LEVEL 	5
+#define PROCESS_COUNT 		3
+#define STACK_SIZE 			100
 
 // error codes
-#define SUCCESS 0
-#define NULL_ARGUMENT -1
-#define ILLEGAL_ARGUMENT -2
-#define OTHER_ERROR -3
+#define SUCCESS 			0
+#define NULL_ARGUMENT 		-1
+#define ILLEGAL_ARGUMENT 	-2
+#define OTHER_ERROR 		-3
 
 typedef int bool;
-#define TRUE 1
-#define FALSE 0
+#define TRUE 		1
+#define FALSE 		0
 
 // atomic flags
 #define ON TRUE
 #define OFF FALSE
 
-#define DEBUG 0
+#define DEBUG 		0
 
 void die(int signal);
 
@@ -97,41 +97,29 @@ typedef struct init_proc
 	bool is_i_process;
 }InitProc;
 
-typedef struct proc_queue {
-    pcb *head;
-    pcb *tail;
-} proc_queue;
-
-typedef struct proc_pq {
-    int num_priorities;
-    proc_queue **priority_queues;
-} proc_pq;
-
-
 // global variables
-pcb* current_process;
-pcb* prev_process;
-MsgEnvQ* free_env_queue;
-pcb* pcb_list[PROCESS_COUNT];
-MsgEnvQ* displayQ;
-
+extern pcb* current_process;
+extern pcb* prev_process;
+extern MsgEnvQ* free_env_queue;
+extern pcb* pcb_list[PROCESS_COUNT];
+extern MsgEnvQ* displayQ;
 
 // globals
-inputbuf * in_mem_p_key;	// pointer to structure that is the shared memory
-outputbuf* in_mem_p_crt;	// pointer to structure that is the shared memory
-int in_pid_keyboard;		// pid of keyboard child process
-int in_pid_crt;				// pid of crt child process
-caddr_t mmap_ptr_keyboard;
-caddr_t mmap_ptr_crt;
-int bufsize;
-int fid, fid2, status;		//used to create the shared memory
+extern inputbuf * in_mem_p_key;	// pointer to structure that is the shared memory
+extern outputbuf* in_mem_p_crt;	// pointer to structure that is the shared memory
+extern int in_pid_keyboard;		// pid of keyboard child process
+extern int in_pid_crt;				// pid of crt child process
+extern caddr_t mmap_ptr_keyboard;
+extern caddr_t mmap_ptr_crt;
+extern int bufsize;
+extern int fid, fid2, status;		//used to create the shared memory
 
-int numOfTicks;
-int displayClock;
+extern int numOfTicks;
+extern int displayClock;
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-char * sfilename;
-char * cfilename;
+extern char * sfilename;
+extern char * cfilename;
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #endif

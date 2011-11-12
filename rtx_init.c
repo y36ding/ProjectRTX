@@ -1,13 +1,15 @@
 #include "rtx_init.h"
 #include "rtx.h"
 #include "kbcrt.h"
+#include "MsgEnvQueue.h"
+#include "kernal.h"
 
 
 // Initialization Table
 InitProc init_table[PROCESS_COUNT] = {
-		{"Keyboard I proc\0", KB_I_PROCESS_ID, 0, TRUE},
-		{"CRT I proc\0", CRT_I_PROCESS_ID, TRUE},
-		{"P Process\0", P_PROCESS_ID, FALSE}
+	{"Keyboard I proc\0", KB_I_PROCESS_ID, 0, TRUE},
+	{"CRT I proc\0", CRT_I_PROCESS_ID, TRUE},
+	{"P Process\0", P_PROCESS_ID, FALSE}
 };
 
 int init_globals() {
@@ -30,8 +32,8 @@ int init_all_lists()
 	int i;
 	int init_status = SUCCESS;
 
-	free_env_queue = (MsgEnvQ*)MsgEnvQ_create();
-	displayQ = (MsgEnvQ*)MsgEnvQ_create();
+	free_env_queue = MsgEnvQ_create();
+	displayQ = MsgEnvQ_create();
 
 	for (i = 0; i < PROCESS_COUNT; ++i)
 	{
@@ -45,7 +47,7 @@ int init_all_lists()
 		pcb_list[i]->priority = init_table[i].priority;
 		pcb_list[i]->state = READY;
 		pcb_list[i]->name = init_table[i].name;
-		pcb_list[i]->rcv_msg_queue = (MsgEnvQ*)MsgEnvQ_create();
+		pcb_list[i]->rcv_msg_queue = MsgEnvQ_create();
 		pcb_list[i]->is_i_process = init_table[i].is_i_process;
 	}
 
@@ -68,7 +70,7 @@ int init_all_lists()
 	}
 
 
-	current_process = (pcb*)pid_to_pcb(P_PROCESS_ID);
+	current_process = pid_to_pcb(P_PROCESS_ID);
 	current_process->state = NEVER_BLK_RCV;
 	prev_process = current_process;
 
@@ -122,7 +124,7 @@ int init_mmaps() {
 		int mypid = getpid();			// get current process pid
 
 		sprintf(childarg1, "%d", mypid); // convert to string to pass to child
-	    sprintf(childarg2, "%d", fid);   // convert the file identifier
+	   	sprintf(childarg2, "%d", fid);   // convert the file identifier
 
 
 		// now start doing whatever work you are supposed to do
@@ -150,7 +152,7 @@ int init_mmaps() {
 		// pass parent's process id and the file id to child CRT
 
 		sprintf(childarg1, "%d", mypid); // convert to string to pass to child
-	    sprintf(childarg2, "%d", fid2);   // convert the file identifier
+	    	sprintf(childarg2, "%d", fid2);   // convert the file identifier
 
 		in_pid_crt = fork();
 		if (in_pid_crt == 0)	// is this the child process ?
@@ -223,52 +225,52 @@ void cleanup()
 
 	// remove shared memory segment and do some standard error checks
 	status = munmap(mmap_ptr_keyboard, bufsize);
-    if (status == -1){
-      printf("Bad munmap during cleanup\n");
-    } else {
-      printf("Unmapped shared memory for keyboard...\n");
-    }
+	if (status == -1){
+		printf("Bad munmap during cleanup\n");
+	} else {
+		printf("Unmapped shared memory for keyboard...\n");
+	}
 
-    status = munmap(mmap_ptr_crt, bufsize);
-    if (status == -1){
-      printf("Bad munmap during cleanup\n");
-    } else {
-      printf("Unmapped shared memory for CRT...\n");
-    }
+	status = munmap(mmap_ptr_crt, bufsize);
+	if (status == -1){
+		printf("Bad munmap during cleanup\n");
+	} else {
+		printf("Unmapped shared memory for CRT...\n");
+	}
 
 	// close the temporary mmap file
-    status = close(fid);
-    if (status == -1){
-      printf("Bad close of temporary mmap file during cleanup\n");
-    } else {
-      printf("Closed the file used for shared keyboard...\n");
-    }
+	status = close(fid);
+	if (status == -1){
+		printf("Bad close of temporary mmap file during cleanup\n");
+	} else {
+		printf("Closed the file used for shared keyboard...\n");
+	}
 
-    status = close(fid2);
-    if (status == -1){
-      printf("Bad close of temporary mmap file during cleanup\n");
-    } else {
-      printf("Closed the file used for shared CRT...\n");
-    }
+	status = close(fid2);
+	if (status == -1){
+		printf("Bad close of temporary mmap file during cleanup\n");
+	} else {
+		printf("Closed the file used for shared CRT...\n");
+	}
 
 	// unlink (i.e. delete) the temporary mmap file
-    status = unlink(sfilename);
-    if (status == -1){
-      printf("Bad unlink during claeanup.\n");
-    } else {
-      printf("Deleted the file used for shared keyboard...\n");
-    }
+	status = unlink(sfilename);
+	if (status == -1){
+		printf("Bad unlink during claeanup.\n");
+	} else {
+		printf("Deleted the file used for shared keyboard...\n");
+	}
 
-    status = unlink(cfilename);
-    if (status == -1){
-      printf("Bad unlink during clean up.\n");
-    } else {
-      printf("Deleted the file used for shared CRT...\n");
-    }
+	status = unlink(cfilename);
+	if (status == -1){
+		printf("Bad unlink during clean up.\n");
+	} else {
+		printf("Deleted the file used for shared CRT...\n");
+	}
 
-    // It is possible allocation failed in initialization
-    // We try to ensure we don't try to free memory that was never allocated by always checking whether the pointer
-    // is NULL or not
+	// It is possible allocation failed in initialization
+	// We try to ensure we don't try to free memory that was never allocated by always checking
+	//whether the pointer is NULL or not
 	int i;
 	ps("Freeing All Queues");
 	MsgEnvQ_destroy(free_env_queue);

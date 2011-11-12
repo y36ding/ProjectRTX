@@ -50,27 +50,25 @@ int main (int argc, char * argv[])
 		    MAP_SHARED,    /* Accessible by another process */
 		    fid,           /* which file is associated with mmap */
 		    (off_t) 0);    /* Offset in page frame */
-    if (mmap_ptr == MAP_FAILED){
-      printf("Child memory map has failed, KB is aborting!\n");
-	  in_die(0);
-    }
+	if (mmap_ptr == MAP_FAILED){
+		printf("Child memory map has failed, KB is aborting!\n");
+		in_die(0);
+	}
 	
 	in_mem_p = (inputbuf *) mmap_ptr; // now we have a shared memory pointer
 
 	// read keyboard
 	buf_index = 0;
 	in_mem_p->ok_flag = OKAY_TO_WRITE;
+
 	do
 	{
-		fflush(stdout);
-		printf(">>");
-		fflush(stdout);
 		c = getchar();
 		if ( c != '\n') {
 					if( buf_index < MAXCHAR-1 ) {
 						in_mem_p->indata[buf_index++] = c;
 					} else {
-						printf("Limit Exceeded, will truncate at  ");
+						//printf("Limit Exceeded, will truncate at  ");
 					}
 				} else {
 					in_mem_p->indata[buf_index] = '\0';

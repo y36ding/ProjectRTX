@@ -7,95 +7,95 @@
 #include <sys/wait.h>
 
 
-MsgEnvQ * MsgEnvQ_create()
+MsgEnvQ* MsgEnvQ_create()
 {
-    MsgEnvQ * queue = malloc(sizeof(MsgEnvQ));
-    if (queue)
-    {
-        queue->head = NULL;
-        queue-> tail = NULL;
-    }
-    return queue;
-}
-
-void MsgEnvQ_destroy(MsgEnvQ * queue)
-{
-    free(queue);
-}
-
-int MsgEnvQ_is_empty(MsgEnvQ* queue)
-{
-    if (queue == NULL)
-    {
-        return -1;
-    }
-
-    if (queue->head == NULL)
-    {
-        assert(queue->tail == NULL);
-    }
-
-    return queue->head == NULL;
-}
-
-MsgEnv* MsgEnvQ_dequeue(MsgEnvQ *queue)
-{
-    if (queue == NULL)
-    {
-        return NULL;
-    }
-
-	MsgEnv* returnEnv = queue->head;
-	if (queue->head == queue->tail)
+	MsgEnvQ* new_MsgEnvQ = malloc(sizeof(MsgEnvQ));
+	if (new_MsgEnvQ )
 	{
-		queue->tail = NULL;
+		new_MsgEnvQ->head = NULL;
+		new_MsgEnvQ->tail = NULL;
 	}
-	if (queue->head != NULL)
+	return new_MsgEnvQ;
+}
+
+void MsgEnvQ_destroy(MsgEnvQ *destroyedQ)
+{
+	free(destroyedQ);
+}
+
+int MsgEnvQ_is_empty(MsgEnvQ* emptyQ)
+{
+	int empty = 1;
+	if (emptyQ == NULL)
+		return NULL_ARGUMENT;
+	
+
+	if (emptyQ->head == NULL)
 	{
-		queue->head = queue->head->next;
-        returnEnv->next = NULL;
+		emptyQ->tail=NULL;
+	}else{
+		empty = 0;
 	}
 
-	return returnEnv;
+	return empty;
 }
 
-
-int MsgEnvQ_enqueue(MsgEnvQ *queue, MsgEnv* env)
+MsgEnv *MsgEnvQ_dequeue(MsgEnvQ *msg_env_q)
 {
-	if (queue == NULL || env == NULL)
+	if (msg_env_q == NULL)
+		return NULL;
+
+	MsgEnv* dequeued_env = msg_env_q->head; 
+	if (msg_env_q->head == msg_env_q->tail)
 	{
-		//return ERROR_NULL_ARG;
-		return -1;
+		msg_env_q->head = NULL;
+		msg_env_q->tail = NULL;
 	}
 
-    if (queue->head == NULL)
-    {
-        queue->head = env;
-    }
-    else
-    {
-        queue->tail->next = env;
-    }
+	if (msg_env_q->head != NULL)
+	{
+		msg_env_q->head = msg_env_q->head->next;     		
+	}
 
-    queue->tail = env;
-    queue->tail->next = NULL;
-
-    return 0;
+	dequeued_env->next = NULL;
+	return dequeued_env;
 }
 
-int MsgEnvQ_size(MsgEnvQ *queue)
+int MsgEnvQ_enqueue(MsgEnvQ *msg_env_q, MsgEnv* env)
 {
-    if (queue == NULL)
-    {
-        return -1;
-    }
+	if (env == NULL || msg_env_q == NULL)
+	{
+		return NULL_ARGUMENT;
+	}
 
-    MsgEnv * env = queue->head;
-    int size = 0;
-    while (env != NULL)
-    {
-        env = env->next;
-        size++;
-    }
-    return size;
+	if (msg_env_q->head != NULL)
+	{
+		msg_env_q->tail->next = env;
+	}else{
+		msg_env_q->head = env;		
+	}
+
+	msg_env_q->tail = env;
+	msg_env_q->tail->next = NULL;
+
+	return 0;
+}
+
+int MsgEnvQ_size(MsgEnvQ *msg_env_q)
+{
+	if (msg_env_q == NULL)
+	{
+		return NULL_ARGUMENT;
+	}
+
+	MsgEnv *env = msg_env_q->head;
+	int length = 0;
+
+	while (env != NULL)
+	{
+		env = env->next;
+		length++;
+	}
+
+	return length;
 }
